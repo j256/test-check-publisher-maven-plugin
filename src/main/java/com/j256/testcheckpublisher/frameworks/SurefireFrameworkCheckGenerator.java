@@ -38,8 +38,8 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 	private final int MAX_NUMBER_ANNOTATIONS = 50;
 
 	@Override
-	public CheckRunOutput createRequest(String owner, String repository, String sha, Collection<FileInfo> fileInfos)
-			throws Exception {
+	public CheckRunOutput createRequest(String owner, String repository, String commitSha,
+			Collection<FileInfo> fileInfos) throws Exception {
 
 		CheckRunOutput output = new CheckRunOutput("", "", "");
 
@@ -80,7 +80,7 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 				// XXX: could not locate this file
 				System.err.println("WARNING: could not locate file associated with class: " + className);
 			} else {
-				addTestSuite(owner, repository, sha, output, file, className, fileInfo, textSb);
+				addTestSuite(owner, repository, commitSha, output, file, className, fileInfo, textSb);
 			}
 		}
 
@@ -116,7 +116,7 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 		return nameMap.get(path.substring(index));
 	}
 
-	private void addTestSuite(String owner, String repository, String sha, CheckRunOutput output, File file,
+	private void addTestSuite(String owner, String repository, String commitSha, CheckRunOutput output, File file,
 			String className, FileInfo fileInfo, StringBuilder textSb) throws Exception {
 
 		try (Reader reader = new FileReader(file)) {
@@ -165,7 +165,7 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 						.append('/')
 						.append(repository)
 						.append("/blob/")
-						.append(sha)
+						.append(commitSha)
 						.append('/')
 						.append(fileInfo.getPath())
 						.append("#L")

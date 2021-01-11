@@ -1,5 +1,7 @@
 package com.j256.testcheckpublisher;
 
+import java.io.File;
+
 /**
  * Information about a particular file.
  * 
@@ -11,9 +13,15 @@ public class FileInfo {
 	final String name;
 	final String sha;
 
-	public FileInfo(String path, String name, String sha) {
+	public FileInfo(String path, String sha) {
 		this.path = path;
-		this.name = name;
+		// extract our file-name
+		int index = path.lastIndexOf(File.separatorChar);
+		if (index < path.length() - 1) {
+			this.name = path.substring(index + 1);
+		} else {
+			this.name = path;
+		}
 		this.sha = sha;
 	}
 

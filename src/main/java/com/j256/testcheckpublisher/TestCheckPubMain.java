@@ -7,9 +7,7 @@ import java.security.PrivateKey;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -66,16 +64,16 @@ public class TestCheckPubMain {
 			System.exit(1);
 		}
 
-		String sha = "68c5a166411921adda44adbc276675e78b7756a7";
+		String commitSha = "38393ed9cccbee8ba1b86b64b6582f28d07f5ee0";
 
 		String accessToken = createAccessToken(httpclient, gson, bearerToken, repository, installationId);
 
-		Collection<FileInfo> fileInfos = getCommitInfo(httpclient, gson, accessToken, owner, repository, sha);
+		Collection<FileInfo> fileInfos = getCommitInfo(httpclient, gson, accessToken, owner, repository, commitSha);
 
 		SurefireFrameworkCheckGenerator generator = new SurefireFrameworkCheckGenerator();
 
-		CheckRunOutput output = generator.createRequest(owner, repository, sha, fileInfos);
-		CheckRunRequest request = new CheckRunRequest("Surefile unit tests", sha, output);
+		CheckRunOutput output = generator.createRequest(owner, repository, commitSha, fileInfos);
+		CheckRunRequest request = new CheckRunRequest("Surefile unit tests", commitSha, output);
 
 		addCheckRun(httpclient, gson, accessToken, request, owner, repository);
 	}
@@ -153,38 +151,28 @@ public class TestCheckPubMain {
 		}
 
 		List<FileInfo> fileInfos = new ArrayList<>();
-		Queue<ShaPathPrefix> shaQueue = new LinkedList<>();
-		shaQueue.add(new ShaPathPrefix(commitInfoResponse.getTree().getSha(), ""));
 
-		while (true) {
-			ShaPathPrefix shaPath = shaQueue.poll();
-			if (shaPath == null) {
-				return fileInfos;
-			}
-			// GET /repos/{owner}/{repo}/git/trees/{tree_sha}
-			get = new HttpGet("https://api.github.com/repos/" + owner + "/" + repository + "/git/trees/" + shaPath.sha);
-			get.addHeader("Authorization", "token " + accessToken);
-			get.addHeader("Accept", "application/vnd.github.v3+json");
+		// GET /repos/{owner}/{repo}/git/trees/{tree_sha}
+		get = new HttpGet("https://api.github.com/repos/" + owner + "/" + repository + "/git/trees/"
+				+ commitInfoResponse.getTree().getSha() + "?recursive=1");
+		get.addHeader("Authorization", "token " + accessToken);
+		get.addHeader("Accept", "application/vnd.github.v3+json");
 
-			try (CloseableHttpResponse response = httpclient.execute(get)) {
-				String str = IoUtils.inputStreamToString(response.getEntity().getContent());
-				// TreeInfoResponse treeInfoResponse =
-				// gson.fromJson(new InputStreamReader(response.getEntity().getContent()), TreeInfoResponse.class);
-				TreeInfoResponse treeInfoResponse = gson.fromJson(str, TreeInfoResponse.class);
-				if (treeInfoResponse.getTreeFiles() != null) {
-					for (TreeFile treeFile : treeInfoResponse.getTreeFiles()) {
-						if (TREE_TYPE.equals(treeFile.getType())) {
-							shaQueue.add(new ShaPathPrefix(treeFile.getSha(),
-									shaPath.pathPrefix + treeFile.getPath() + "/"));
-						} else {
-							// make our path a relative path from root
-							fileInfos.add(new FileInfo(shaPath.pathPrefix + treeFile.getPath(), treeFile.getPath(),
-									treeFile.getSha()));
-						}
+		try (CloseableHttpResponse response = httpclient.execute(get)) {
+			String str = IoUtils.inputStreamToString(response.getEntity().getContent());
+			// TreeInfoResponse treeInfoResponse =
+			// gson.fromJson(new InputStreamReader(response.getEntity().getContent()), TreeInfoResponse.class);
+			TreeInfoResponse treeInfoResponse = gson.fromJson(str, TreeInfoResponse.class);
+			if (treeInfoResponse.getTreeFiles() != null) {
+				for (TreeFile treeFile : treeInfoResponse.getTreeFiles()) {
+					if (!TREE_TYPE.equals(treeFile.getType())) {
+						// make our path a relative path from root
+						fileInfos.add(new FileInfo(treeFile.getPath(), treeFile.getSha()));
 					}
 				}
 			}
 		}
+		return fileInfos;
 	}
 
 	private static void addCheckRun(CloseableHttpClient httpclient, Gson gson, String accessToken,
@@ -200,15 +188,5 @@ public class TestCheckPubMain {
 
 		// Builds the JWT and serializes it to a compact, URL-safe string
 		System.out.println(IoUtils.inputStreamToString(response.getEntity().getContent()));
-	}
-
-	private static class ShaPathPrefix {
-		final String sha;
-		final String pathPrefix;
-
-		public ShaPathPrefix(String sha, String pathPrefix) {
-			this.sha = sha;
-			this.pathPrefix = pathPrefix;
-		}
 	}
 }
