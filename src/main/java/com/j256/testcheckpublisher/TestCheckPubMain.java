@@ -36,7 +36,7 @@ import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
-public class JwtTest {
+public class TestCheckPubMain {
 
 	private static final String TREE_TYPE = "tree";
 
@@ -66,7 +66,7 @@ public class JwtTest {
 			System.exit(1);
 		}
 
-		String sha = "9cdb380d857d8498ea8ebead6639b1d5c77c5416";
+		String sha = "68c5a166411921adda44adbc276675e78b7756a7";
 
 		String accessToken = createAccessToken(httpclient, gson, bearerToken, repository, installationId);
 
@@ -74,21 +74,10 @@ public class JwtTest {
 
 		SurefireFrameworkCheckGenerator generator = new SurefireFrameworkCheckGenerator();
 
-		CheckRunOutput output = generator.createRequest(sha, fileInfos);
-		CheckRunRequest request = new CheckRunRequest("Surefile unit test results", sha, output);
+		CheckRunOutput output = generator.createRequest(owner, repository, sha, fileInfos);
+		CheckRunRequest request = new CheckRunRequest("Surefile unit tests", sha, output);
 
-		String path = "/repos/" + owner + "/" + repository + "/check-runs";
-
-		HttpPost post = new HttpPost("https://api.github.com" + path);
-		post.addHeader("Authorization", "token " + accessToken);
-		post.addHeader("Accept", "application/vnd.github.v3+json");
-
-		post.setEntity(new StringEntity(gson.toJson(request)));
-
-		CloseableHttpResponse response = httpclient.execute(post);
-
-		// Builds the JWT and serializes it to a compact, URL-safe string
-		System.out.println(IoUtils.inputStreamToString(response.getEntity().getContent()));
+		addCheckRun(httpclient, gson, accessToken, request, owner, repository);
 	}
 
 	private static String buildBearerToken(PrivateKey key, String issuer, long ttlMillis,
@@ -132,8 +121,7 @@ public class JwtTest {
 	private static String createAccessToken(CloseableHttpClient httpclient, Gson gson, String bearerToken,
 			String repository, int installationId)
 			throws JsonSyntaxException, UnsupportedOperationException, IOException {
-		String path = "/app/installations/" + installationId + "/access_tokens";
-		HttpPost post = new HttpPost("https://api.github.com" + path);
+		HttpPost post = new HttpPost("https://api.github.com/app/installations/" + installationId + "/access_tokens");
 		post.addHeader("Authorization", "Bearer " + bearerToken);
 		post.addHeader("Accept", "application/vnd.github.v3+json");
 
@@ -152,9 +140,8 @@ public class JwtTest {
 			String owner, String repository, String topSha)
 			throws JsonSyntaxException, UnsupportedOperationException, IOException {
 
-		String path = "/repos/" + owner + "/" + repository + "/git/commits/" + topSha;
-		HttpGet get = new HttpGet("https://api.github.com" + path);
-		// get.addHeader("Authorization", "Bearer " + bearerToken);
+		HttpGet get =
+				new HttpGet("https://api.github.com/repos/" + owner + "/" + repository + "/git/commits/" + topSha);
 		get.addHeader("Accept", "application/vnd.github.v3+json");
 
 		CommitInfoResponse commitInfoResponse;
@@ -175,9 +162,7 @@ public class JwtTest {
 				return fileInfos;
 			}
 			// GET /repos/{owner}/{repo}/git/trees/{tree_sha}
-			path = "/repos/" + owner + "/" + repository + "/git/trees/" + shaPath.sha;
-
-			get = new HttpGet("https://api.github.com" + path);
+			get = new HttpGet("https://api.github.com/repos/" + owner + "/" + repository + "/git/trees/" + shaPath.sha);
 			get.addHeader("Authorization", "token " + accessToken);
 			get.addHeader("Accept", "application/vnd.github.v3+json");
 
@@ -200,6 +185,21 @@ public class JwtTest {
 				}
 			}
 		}
+	}
+
+	private static void addCheckRun(CloseableHttpClient httpclient, Gson gson, String accessToken,
+			CheckRunRequest request, String owner, String repository) throws IOException {
+
+		HttpPost post = new HttpPost("https://api.github.com/repos/" + owner + "/" + repository + "/check-runs");
+		post.addHeader("Authorization", "token " + accessToken);
+		post.addHeader("Accept", "application/vnd.github.v3+json");
+
+		post.setEntity(new StringEntity(gson.toJson(request)));
+
+		CloseableHttpResponse response = httpclient.execute(post);
+
+		// Builds the JWT and serializes it to a compact, URL-safe string
+		System.out.println(IoUtils.inputStreamToString(response.getEntity().getContent()));
 	}
 
 	private static class ShaPathPrefix {

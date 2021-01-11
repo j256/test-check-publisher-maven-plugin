@@ -33,9 +33,13 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 	private final Pattern XML_PATTERN = Pattern.compile("TEST-(.*)\\.xml");
 	private final boolean SHOW_NOTICE = true;
 	private final int DEFAULT_LINE_NUMBER = 1;
+	// XXX
+	@SuppressWarnings("unused")
+	private final int MAX_NUMBER_ANNOTATIONS = 50;
 
 	@Override
-	public CheckRunOutput createRequest(String sha, Collection<FileInfo> fileInfos) throws Exception {
+	public CheckRunOutput createRequest(String owner, String repository, String sha, Collection<FileInfo> fileInfos)
+			throws Exception {
 
 		CheckRunOutput output = new CheckRunOutput("", "", "");
 
@@ -61,6 +65,8 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 			nameMap.put(path.substring(index), fileInfo);
 		}
 
+		StringBuilder textSb = new StringBuilder();
+
 		File dir = new File(SUREFIRE_DIR);
 		for (File file : dir.listFiles()) {
 			Matcher matcher = XML_PATTERN.matcher(file.getName());
@@ -72,15 +78,16 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 			FileInfo fileInfo = mapFileByClass(nameMap, className);
 			if (fileInfo == null) {
 				// XXX: could not locate this file
-				System.err.println("could not locate class: " + className);
+				System.err.println("WARNING: could not locate file associated with class: " + className);
 			} else {
-				addTestSuite(output, file, className, fileInfo);
+				addTestSuite(owner, repository, sha, output, file, className, fileInfo, textSb);
 			}
 		}
 
 		String title = output.getTestCount() + " tests, " + output.getErrorCount() + " errors, "
 				+ output.getFailureCount() + " failures";
 		output.setTitle(title);
+		output.setText(textSb.toString());
 
 		return output;
 	}
@@ -109,17 +116,15 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 		return nameMap.get(path.substring(index));
 	}
 
-	private void addTestSuite(CheckRunOutput output, File file, String className, FileInfo fileInfo) throws Exception {
+	private void addTestSuite(String owner, String repository, String sha, CheckRunOutput output, File file,
+			String className, FileInfo fileInfo, StringBuilder textSb) throws Exception {
+
 		try (Reader reader = new FileReader(file)) {
 			String str = IoUtils.readerToString(reader);
 			SurefireTestSuite suite = xmlMapper.readValue(str, SurefireTestSuite.class);
 			output.addCounts(suite.numTests, suite.numFailures, suite.numErrors);
 
 			for (TestCase test : suite.getTestcases()) {
-
-				// need to find the path in question in the list of tree-files
-				// go through the body and find the first line mentioning a particular test (closest to failure)
-				// get line number if possible otherwise use 1
 
 				Level level;
 				Problem failure = test.getFailure();
@@ -139,6 +144,7 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 					continue;
 				}
 
+				// look to find if we have file:line format
 				int lineNumber = findLineNumber(className, problem.body);
 				if (lineNumber == DEFAULT_LINE_NUMBER) {
 					lineNumber = findLineNumber(fileInfo.getName(), problem.body);
@@ -147,6 +153,24 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 						test.getClassName() + "." + test.getName() + " failed test",
 						problem.type + ": " + problem.message, problem.body));
 
+				/*
+				 * XXX: how can I tell when the annotation is going to properly mark a file versus and therefore I don't
+				 * need to do something like this.
+				 */
+				textSb.append("* ")
+						.append(problem.type)
+						.append(" on ")
+						.append("https://github.com/")
+						.append(owner)
+						.append('/')
+						.append(repository)
+						.append("/blob/")
+						.append(sha)
+						.append('/')
+						.append(fileInfo.getPath())
+						.append("#L")
+						.append(lineNumber)
+						.append("\n");
 			}
 		}
 	}

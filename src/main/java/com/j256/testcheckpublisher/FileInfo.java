@@ -20,7 +20,7 @@ public class FileInfo {
 	public String getPath() {
 		return path;
 	}
-	
+
 	public String getName() {
 		return name;
 	}

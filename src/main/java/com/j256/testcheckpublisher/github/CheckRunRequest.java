@@ -28,7 +28,7 @@ public class CheckRunRequest {
 	public static class CheckRunOutput {
 		String title;
 		String summary;
-		final String text;
+		String text;
 		transient int testCount;
 		transient int failureCount;
 		transient int errorCount;
@@ -62,7 +62,7 @@ public class CheckRunRequest {
 				errorCount++;
 			}
 		}
-		
+
 		public int getTestCount() {
 			return testCount;
 		}
@@ -81,6 +81,10 @@ public class CheckRunRequest {
 
 		public void setTitle(String title) {
 			this.title = title;
+		}
+
+		public void setText(String text) {
+			this.text = text;
 		}
 	}
 

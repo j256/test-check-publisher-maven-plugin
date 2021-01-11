@@ -15,5 +15,6 @@ public interface FrameworkCheckGenerator {
 	/**
 	 * Return the request for the framework.
 	 */
-	public CheckRunOutput createRequest(String sha, Collection<FileInfo> fileInfos) throws Exception;
+	public CheckRunOutput createRequest(String owner, String repository, String sha, Collection<FileInfo> fileInfos)
+			throws Exception;
 }

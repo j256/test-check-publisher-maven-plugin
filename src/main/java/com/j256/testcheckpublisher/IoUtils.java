@@ -6,6 +6,11 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 
+/**
+ * Some static IO utility methods.
+ * 
+ * @author graywatson
+ */
 public class IoUtils {
 
 	public static String inputStreamToString(InputStream inputStream)

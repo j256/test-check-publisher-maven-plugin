@@ -24,10 +24,6 @@ public class SurefireTestSuite {
 	@JacksonXmlProperty(isAttribute = true, localName = "failures")
 	int numFailures;
 
-	@JacksonXmlProperty
-	Property[] properties;
-	// @JacksonXmlProperty
-	// TestCase testcase;
 	@JacksonXmlProperty(localName = "testcase")
 	@JacksonXmlElementWrapper(useWrapping = false)
 	TestCase[] testcases;
@@ -52,27 +48,8 @@ public class SurefireTestSuite {
 		return numFailures;
 	}
 
-	public Property[] getProperties() {
-		return properties;
-	}
-
 	public TestCase[] getTestcases() {
 		return testcases;
-	}
-
-	public static class Property {
-		@JacksonXmlProperty(isAttribute = true)
-		String name;
-		@JacksonXmlProperty(isAttribute = true)
-		String value;
-
-		public String getName() {
-			return name;
-		}
-
-		public String getValue() {
-			return value;
-		}
 	}
 
 	@JacksonXmlRootElement(localName = "testcase")
