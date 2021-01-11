@@ -11,4 +11,9 @@ public class JwtTestTest {
 		fail("Not yet implemented");
 	}
 
+	@Test
+	public void test2() {
+		assertEquals(1, 2);
+	}
+
 }
