@@ -3,18 +3,22 @@ package com.j256.testcheckpublisher.frameworks;
 import java.io.File;
 import java.io.FileReader;
 import java.io.Reader;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.j256.testcheckpublisher.FileInfo;
+import com.j256.testcheckpublisher.IoUtils;
 import com.j256.testcheckpublisher.frameworks.SurefireTestSuite.Problem;
 import com.j256.testcheckpublisher.frameworks.SurefireTestSuite.TestCase;
 import com.j256.testcheckpublisher.github.CheckRunRequest.CheckRunAnnotation;
 import com.j256.testcheckpublisher.github.CheckRunRequest.CheckRunOutput;
 import com.j256.testcheckpublisher.github.CheckRunRequest.Level;
-import com.j256.testcheckpublisher.github.TreeFile;
 
 /**
  * Generate a check-run object from surefire XML files.
@@ -23,39 +27,38 @@ import com.j256.testcheckpublisher.github.TreeFile;
  */
 public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator {
 
-	private final XmlMapper xmlMapper = new XmlMapper();
+	private final ObjectMapper xmlMapper =
+			new XmlMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 	private final String SUREFIRE_DIR = "target/surefire-reports";
 	private final Pattern XML_PATTERN = Pattern.compile("TEST-(.*)\\.xml");
 	private final boolean SHOW_NOTICE = true;
 	private final int DEFAULT_LINE_NUMBER = 1;
 
 	@Override
-	public CheckRunOutput createRequest(String sha, TreeFile[] treeFiles) throws Exception {
+	public CheckRunOutput createRequest(String sha, Collection<FileInfo> fileInfos) throws Exception {
 
-		CheckRunOutput output = new CheckRunOutput("Surefire test run", null, "other text");
-
-		String summary = output.getTestCount() + " tests, " + output.getErrorCount() + " errors, "
-				+ output.getFailureCount() + " failures";
-		output.setSummary(summary);
+		CheckRunOutput output = new CheckRunOutput("", "", "");
 
 		/*
 		 * Create a map of path portions to file names, the idea being that we may have classes not laid out in a nice
 		 * hierarchy and we don't want to read all files looking for package ...
 		 */
-		Map<String, String> nameMap = new HashMap<>();
-		for (TreeFile treeFile : treeFiles) {
-			String path = treeFile.getPath();
+		Map<String, FileInfo> nameMap = new HashMap<>();
+		for (FileInfo fileInfo : fileInfos) {
+			String path = fileInfo.getPath();
+			nameMap.put(path, fileInfo);
+			nameMap.put(fileInfo.getName(), fileInfo);
 			int index = 0;
 			while (true) {
-				int nextIndex = path.indexOf(File.pathSeparator, index);
+				int nextIndex = path.indexOf(File.separatorChar, index);
 				if (nextIndex < 0) {
 					break;
 				}
 				index = nextIndex + 1;
-				nameMap.put(path.substring(index), path);
+				nameMap.put(path.substring(index), fileInfo);
 			}
 			// should be just the name
-			nameMap.put(path.substring(index), path);
+			nameMap.put(path.substring(index), fileInfo);
 		}
 
 		File dir = new File(SUREFIRE_DIR);
@@ -66,29 +69,38 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 			}
 
 			String className = matcher.group(1);
-			String fileName = fileFileMap(nameMap, className);
-			if (fileName == null) {
+			FileInfo fileInfo = mapFileByClass(nameMap, className);
+			if (fileInfo == null) {
 				// XXX: could not locate this file
 				System.err.println("could not locate class: " + className);
 			} else {
-				addTestSuite(output, file, className, fileName);
+				addTestSuite(output, file, className, fileInfo);
 			}
 		}
+
+		String title = output.getTestCount() + " tests, " + output.getErrorCount() + " errors, "
+				+ output.getFailureCount() + " failures";
+		output.setTitle(title);
 
 		return output;
 	}
 
-	private String fileFileMap(Map<String, String> nameMap, String className) {
-		String path = className.replace('.', File.separatorChar);
+	private FileInfo mapFileByClass(Map<String, FileInfo> nameMap, String className) {
+		String path = className.replace('.', File.separatorChar) + ".java";
+
+		FileInfo result = nameMap.get(path);
+		if (result != null) {
+			return result;
+		}
 
 		int index = 0;
 		while (true) {
-			int nextIndex = path.indexOf(File.pathSeparator, index);
+			int nextIndex = path.indexOf(File.separatorChar, index);
 			if (nextIndex < 0) {
 				break;
 			}
 			index = nextIndex + 1;
-			String result = nameMap.get(path.substring(index));
+			result = nameMap.get(path.substring(index));
 			if (result != null) {
 				return result;
 			}
@@ -97,9 +109,10 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 		return nameMap.get(path.substring(index));
 	}
 
-	private void addTestSuite(CheckRunOutput output, File file, String className, String fileName) throws Exception {
+	private void addTestSuite(CheckRunOutput output, File file, String className, FileInfo fileInfo) throws Exception {
 		try (Reader reader = new FileReader(file)) {
-			SurefireTestSuite suite = xmlMapper.readValue(reader, SurefireTestSuite.class);
+			String str = IoUtils.readerToString(reader);
+			SurefireTestSuite suite = xmlMapper.readValue(str, SurefireTestSuite.class);
 			output.addCounts(suite.numTests, suite.numFailures, suite.numErrors);
 
 			for (TestCase test : suite.getTestcases()) {
@@ -120,34 +133,37 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 					level = Level.ERROR;
 				} else {
 					if (SHOW_NOTICE) {
-						output.addAnnotation(new CheckRunAnnotation(fileName, 1, 1, Level.NOTICE, "no errors",
-								test.getName() + " succeeded", null));
+						output.addAnnotation(new CheckRunAnnotation(fileInfo.getPath(), 1, 1, Level.NOTICE,
+								test.getName() + " succeeded", "no errors", null));
 					}
 					continue;
 				}
 
 				int lineNumber = findLineNumber(className, problem.body);
-				output.addAnnotation(new CheckRunAnnotation(fileName, lineNumber, lineNumber, level, problem.message,
-						test.getName() + " failed test", problem.body));
+				if (lineNumber == DEFAULT_LINE_NUMBER) {
+					lineNumber = findLineNumber(fileInfo.getName(), problem.body);
+				}
+				output.addAnnotation(new CheckRunAnnotation(fileInfo.getPath(), lineNumber, lineNumber, level,
+						test.getClassName() + "." + test.getName() + " failed test",
+						problem.type + ": " + problem.message, problem.body));
 
 			}
 		}
 	}
 
-	private int findLineNumber(String className, String body) {
+	private int findLineNumber(String fileName, String body) {
 		if (body == null) {
 			return DEFAULT_LINE_NUMBER;
 		}
 
 		int index = 0;
 		while (true) {
-			index = body.indexOf(className, index);
+			index = body.indexOf(fileName, index);
 			if (index < 0) {
 				return DEFAULT_LINE_NUMBER;
 			}
-			index += className.length();
+			index += fileName.length();
 			// make sure we have a ':' and a number
-			index++;
 			if (body.length() > index) {
 				if (body.charAt(index++) != ':') {
 					continue;
@@ -157,9 +173,12 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 					char ch = body.charAt(index++);
 					if (Character.isDigit(ch)) {
 						lineNum = lineNum * 10 + (ch - '0');
-					} else if (lineNum > 0) {
-						return lineNum;
+					} else {
+						break;
 					}
+				}
+				if (lineNum > 0) {
+					return lineNum;
 				}
 			}
 		}

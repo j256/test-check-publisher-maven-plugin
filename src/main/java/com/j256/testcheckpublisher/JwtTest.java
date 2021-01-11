@@ -1,12 +1,15 @@
 package com.j256.testcheckpublisher;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.StringWriter;
 import java.security.PrivateKey;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -35,10 +38,11 @@ import io.jsonwebtoken.SignatureAlgorithm;
 
 public class JwtTest {
 
+	private static final String TREE_TYPE = "tree";
+
 	public static void main(String[] args) throws Exception {
 
-		PrivateKey key = KeyHandling
-				.loadKey("/Users/graywatson/Downloads/unit-test-checks-maven-plugin.2021-01-10.private-key.pem");
+		PrivateKey key = KeyHandling.loadKey(args[0]);
 
 		// app-id
 		String issuer = "94919";
@@ -51,7 +55,7 @@ public class JwtTest {
 		String bearerToken = buildBearerToken(key, issuer, ttlMillis, signatureAlgorithm);
 
 		String owner = "j256";
-		String repository = "simplelogging";
+		String repository = "test-check-publisher";
 
 		CloseableHttpClient httpclient = HttpClients.createDefault();
 		Gson gson = new GsonBuilder().create();
@@ -62,15 +66,15 @@ public class JwtTest {
 			System.exit(1);
 		}
 
-		String sha = "74a3254f505d7dd652f9a58398ecd20271fbcd54";
+		String sha = "9cdb380d857d8498ea8ebead6639b1d5c77c5416";
 
 		String accessToken = createAccessToken(httpclient, gson, bearerToken, repository, installationId);
 
-		TreeFile[] treeFiles = getCommitInfo(httpclient, gson, accessToken, owner, repository, sha);
+		Collection<FileInfo> fileInfos = getCommitInfo(httpclient, gson, accessToken, owner, repository, sha);
 
 		SurefireFrameworkCheckGenerator generator = new SurefireFrameworkCheckGenerator();
 
-		CheckRunOutput output = generator.createRequest(sha, treeFiles);
+		CheckRunOutput output = generator.createRequest(sha, fileInfos);
 		CheckRunRequest request = new CheckRunRequest("Surefile unit test results", sha, output);
 
 		String path = "/repos/" + owner + "/" + repository + "/check-runs";
@@ -84,7 +88,7 @@ public class JwtTest {
 		CloseableHttpResponse response = httpclient.execute(post);
 
 		// Builds the JWT and serializes it to a compact, URL-safe string
-		System.out.println(inputStreamToString(response.getEntity().getContent()));
+		System.out.println(IoUtils.inputStreamToString(response.getEntity().getContent()));
 	}
 
 	private static String buildBearerToken(PrivateKey key, String issuer, long ttlMillis,
@@ -144,10 +148,11 @@ public class JwtTest {
 		}
 	}
 
-	private static TreeFile[] getCommitInfo(CloseableHttpClient httpclient, Gson gson, String accessToken, String owner,
-			String repository, String sha) throws JsonSyntaxException, UnsupportedOperationException, IOException {
+	private static Collection<FileInfo> getCommitInfo(CloseableHttpClient httpclient, Gson gson, String accessToken,
+			String owner, String repository, String topSha)
+			throws JsonSyntaxException, UnsupportedOperationException, IOException {
 
-		String path = "/repos/" + owner + "/" + repository + "/git/commits/" + sha;
+		String path = "/repos/" + owner + "/" + repository + "/git/commits/" + topSha;
 		HttpGet get = new HttpGet("https://api.github.com" + path);
 		// get.addHeader("Authorization", "Bearer " + bearerToken);
 		get.addHeader("Accept", "application/vnd.github.v3+json");
@@ -155,45 +160,55 @@ public class JwtTest {
 		CommitInfoResponse commitInfoResponse;
 		try (CloseableHttpResponse response = httpclient.execute(get);
 				Reader contentReader = new InputStreamReader(response.getEntity().getContent());) {
-			String str = readerToString(contentReader);
+			String str = IoUtils.readerToString(contentReader);
 			commitInfoResponse = gson.fromJson(str, CommitInfoResponse.class);
 			// commitInfoResponse = gson.fromJson(contentReader, CommitInfoResponse.class);
 		}
 
-		// GET /repos/{owner}/{repo}/git/trees/{tree_sha}
-		path = "/repos/" + owner + "/" + repository + "/git/trees/" + commitInfoResponse.getTree().getSha();
+		List<FileInfo> fileInfos = new ArrayList<>();
+		Queue<ShaPathPrefix> shaQueue = new LinkedList<>();
+		shaQueue.add(new ShaPathPrefix(commitInfoResponse.getTree().getSha(), ""));
 
-		get = new HttpGet("https://api.github.com" + path);
-		get.addHeader("Authorization", "token " + accessToken);
-		get.addHeader("Accept", "application/vnd.github.v3+json");
-
-		try (CloseableHttpResponse response = httpclient.execute(get)) {
-			String str = inputStreamToString(response.getEntity().getContent());
-			// TreeInfoResponse treeInfoResponse =
-			// gson.fromJson(new InputStreamReader(response.getEntity().getContent()), TreeInfoResponse.class);
-			TreeInfoResponse treeInfoResponse = gson.fromJson(str, TreeInfoResponse.class);
-			return treeInfoResponse.getTreeFiles();
-		}
-	}
-
-	private static String inputStreamToString(InputStream inputStream)
-			throws UnsupportedOperationException, IOException {
-		try (Reader reader = new InputStreamReader(inputStream)) {
-			return readerToString(reader);
-		}
-	}
-
-	private static String readerToString(Reader reader) throws UnsupportedOperationException, IOException {
-		try (StringWriter writer = new StringWriter()) {
-			char[] chars = new char[1024];
-			while (true) {
-				int len = reader.read(chars);
-				if (len < 0) {
-					break;
-				}
-				writer.write(chars, 0, len);
+		while (true) {
+			ShaPathPrefix shaPath = shaQueue.poll();
+			if (shaPath == null) {
+				return fileInfos;
 			}
-			return writer.toString();
+			// GET /repos/{owner}/{repo}/git/trees/{tree_sha}
+			path = "/repos/" + owner + "/" + repository + "/git/trees/" + shaPath.sha;
+
+			get = new HttpGet("https://api.github.com" + path);
+			get.addHeader("Authorization", "token " + accessToken);
+			get.addHeader("Accept", "application/vnd.github.v3+json");
+
+			try (CloseableHttpResponse response = httpclient.execute(get)) {
+				String str = IoUtils.inputStreamToString(response.getEntity().getContent());
+				// TreeInfoResponse treeInfoResponse =
+				// gson.fromJson(new InputStreamReader(response.getEntity().getContent()), TreeInfoResponse.class);
+				TreeInfoResponse treeInfoResponse = gson.fromJson(str, TreeInfoResponse.class);
+				if (treeInfoResponse.getTreeFiles() != null) {
+					for (TreeFile treeFile : treeInfoResponse.getTreeFiles()) {
+						if (TREE_TYPE.equals(treeFile.getType())) {
+							shaQueue.add(new ShaPathPrefix(treeFile.getSha(),
+									shaPath.pathPrefix + treeFile.getPath() + "/"));
+						} else {
+							// make our path a relative path from root
+							fileInfos.add(new FileInfo(shaPath.pathPrefix + treeFile.getPath(), treeFile.getPath(),
+									treeFile.getSha()));
+						}
+					}
+				}
+			}
+		}
+	}
+
+	private static class ShaPathPrefix {
+		final String sha;
+		final String pathPrefix;
+
+		public ShaPathPrefix(String sha, String pathPrefix) {
+			this.sha = sha;
+			this.pathPrefix = pathPrefix;
 		}
 	}
 }

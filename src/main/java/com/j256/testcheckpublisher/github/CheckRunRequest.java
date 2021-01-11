@@ -62,7 +62,7 @@ public class CheckRunRequest {
 				errorCount++;
 			}
 		}
-
+		
 		public int getTestCount() {
 			return testCount;
 		}
@@ -96,19 +96,19 @@ public class CheckRunRequest {
 		int endColumn;
 		@SerializedName("annotation_level")
 		Level level;
-		String message;
 		String title;
+		String message;
 		@SerializedName("raw_details")
 		String details;
 
-		public CheckRunAnnotation(String path, int startLine, int endLine, Level level, String message, String title,
+		public CheckRunAnnotation(String path, int startLine, int endLine, Level level, String title, String message,
 				String details) {
 			this.path = path;
 			this.startLine = startLine;
 			this.endLine = endLine;
 			this.level = level;
-			this.message = message;
 			this.title = title;
+			this.message = message;
 			this.details = details;
 		}
 

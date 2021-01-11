@@ -1,7 +1,9 @@
 package com.j256.testcheckpublisher.frameworks;
 
+import java.util.Collection;
+
+import com.j256.testcheckpublisher.FileInfo;
 import com.j256.testcheckpublisher.github.CheckRunRequest.CheckRunOutput;
-import com.j256.testcheckpublisher.github.TreeFile;
 
 /**
  * Framework which processes its metadata and creates a check-run request object.
@@ -13,5 +15,5 @@ public interface FrameworkCheckGenerator {
 	/**
 	 * Return the request for the framework.
 	 */
-	public CheckRunOutput createRequest(String sha, TreeFile[] treeFiles) throws Exception;
+	public CheckRunOutput createRequest(String sha, Collection<FileInfo> fileInfos) throws Exception;
 }

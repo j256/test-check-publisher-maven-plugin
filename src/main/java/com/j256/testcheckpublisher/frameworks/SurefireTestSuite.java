@@ -1,7 +1,9 @@
 package com.j256.testcheckpublisher.frameworks;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
 
 /**
  * XML surefire output file.
@@ -24,7 +26,10 @@ public class SurefireTestSuite {
 
 	@JacksonXmlProperty
 	Property[] properties;
+	// @JacksonXmlProperty
+	// TestCase testcase;
 	@JacksonXmlProperty(localName = "testcase")
+	@JacksonXmlElementWrapper(useWrapping = false)
 	TestCase[] testcases;
 
 	public String getName() {
@@ -70,11 +75,12 @@ public class SurefireTestSuite {
 		}
 	}
 
+	@JacksonXmlRootElement(localName = "testcase")
 	public static class TestCase {
 		@JacksonXmlProperty(isAttribute = true)
 		String name;
 		@JacksonXmlProperty(isAttribute = true, localName = "classname")
-		String classname;
+		String className;
 		@JacksonXmlProperty(isAttribute = true, localName = "time")
 		float timeSeconds;
 		@JacksonXmlProperty
@@ -86,8 +92,8 @@ public class SurefireTestSuite {
 			return name;
 		}
 
-		public String getClassname() {
-			return classname;
+		public String getClassName() {
+			return className;
 		}
 
 		public float getTimeSeconds() {
@@ -103,12 +109,13 @@ public class SurefireTestSuite {
 		}
 	}
 
+	@JacksonXmlRootElement
 	public static class Problem {
 		@JacksonXmlProperty(isAttribute = true)
 		String message;
 		@JacksonXmlProperty(isAttribute = true)
 		String type;
-		@JacksonXmlProperty
+		@JacksonXmlText
 		String body;
 
 		public String getMessage() {
