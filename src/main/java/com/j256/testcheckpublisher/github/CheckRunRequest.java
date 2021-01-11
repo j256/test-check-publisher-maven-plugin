@@ -10,11 +10,19 @@ public class CheckRunRequest {
 	@SerializedName("head_sha")
 	final String sha;
 	final CheckRunOutput output;
+	final Status status;
+	final Conclusion conclusion;
 
 	public CheckRunRequest(String name, String sha, CheckRunOutput output) {
 		this.name = name;
 		this.sha = sha;
 		this.output = output;
+		this.status = Status.COMPLETED;
+		if (output.errorCount > 0 || output.failureCount > 0) {
+			this.conclusion = Conclusion.FAILURE;
+		} else {
+			this.conclusion = Conclusion.SUCCESS;
+		}
 	}
 
 	public static class CheckRunOutput {
@@ -119,6 +127,36 @@ public class CheckRunRequest {
 		ERROR,
 		@SerializedName("failure")
 		FAILURE,
+		// end
+		;
+	}
+
+	public static enum Status {
+		@SerializedName("queued")
+		QUEUED,
+		@SerializedName("in_progress")
+		IN_PROGRESS,
+		@SerializedName("completed")
+		COMPLETED,
+		// end
+		;
+	}
+
+	public static enum Conclusion {
+		@SerializedName("success")
+		SUCCESS,
+		@SerializedName("failure")
+		FAILURE,
+		@SerializedName("neutral")
+		NEUTRAL,
+		@SerializedName("cancelled")
+		CANCELLED,
+		@SerializedName("skipped")
+		SKIPPED,
+		@SerializedName("timed_out")
+		TIMED_OUT,
+		@SerializedName("action_required")
+		ACTION_REQUIRED,
 		// end
 		;
 	}
