@@ -7,7 +7,9 @@ import java.security.PrivateKey;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -26,6 +28,8 @@ import com.j256.testcheckpublisher.github.AccessTokensResponse;
 import com.j256.testcheckpublisher.github.CheckRunRequest;
 import com.j256.testcheckpublisher.github.CheckRunRequest.CheckRunOutput;
 import com.j256.testcheckpublisher.github.CommitInfoResponse;
+import com.j256.testcheckpublisher.github.CommitInfoResponse.ChangedFile;
+import com.j256.testcheckpublisher.github.IdResponse;
 import com.j256.testcheckpublisher.github.InstallationInfo;
 import com.j256.testcheckpublisher.github.TreeFile;
 import com.j256.testcheckpublisher.github.TreeInfoResponse;
@@ -37,6 +41,12 @@ import io.jsonwebtoken.SignatureAlgorithm;
 public class TestCheckPubMain {
 
 	private static final String TREE_TYPE = "tree";
+	/**
+	 * XXX: we should limit and not drown the user in check information if a test blows up. Also, there is a limit of 50
+	 * checks per request and then we need to do an update.
+	 */
+	@SuppressWarnings("unused")
+	private final int MAX_NUMBER_ANNOTATIONS = 50;
 
 	public static void main(String[] args) throws Exception {
 
@@ -64,11 +74,28 @@ public class TestCheckPubMain {
 			System.exit(1);
 		}
 
-		String commitSha = "38393ed9cccbee8ba1b86b64b6582f28d07f5ee0";
+		String commitSha = "217bd75c06c605562b318bdadec91290b11a4f8c";
 
 		String accessToken = createAccessToken(httpclient, gson, bearerToken, repository, installationId);
 
-		Collection<FileInfo> fileInfos = getCommitInfo(httpclient, gson, accessToken, owner, repository, commitSha);
+		CommitInfoResponse commitInfo = getCommitInfo(httpclient, gson, accessToken, owner, repository, commitSha);
+		Set<String> commitPathSet = new HashSet<>();
+		if (commitInfo.getFiles() != null) {
+			for (ChangedFile file : commitInfo.getFiles()) {
+				// we ignore "removed" files
+				if (!"removed".equals(file.getStatus())) {
+					commitPathSet.add(file.getFilename());
+				}
+			}
+		}
+
+		Collection<FileInfo> fileInfos =
+				getTreeFiles(httpclient, gson, accessToken, owner, repository, commitInfo.getTreeSha());
+		for (FileInfo fileInfo : fileInfos) {
+			if (commitPathSet.contains(fileInfo.path)) {
+				fileInfo.setInCommit(true);
+			}
+		}
 
 		SurefireFrameworkCheckGenerator generator = new SurefireFrameworkCheckGenerator();
 
@@ -134,30 +161,30 @@ public class TestCheckPubMain {
 		}
 	}
 
-	private static Collection<FileInfo> getCommitInfo(CloseableHttpClient httpclient, Gson gson, String accessToken,
+	private static CommitInfoResponse getCommitInfo(CloseableHttpClient httpclient, Gson gson, String accessToken,
 			String owner, String repository, String topSha)
 			throws JsonSyntaxException, UnsupportedOperationException, IOException {
 
-		HttpGet get =
-				new HttpGet("https://api.github.com/repos/" + owner + "/" + repository + "/git/commits/" + topSha);
+		HttpGet get = new HttpGet("https://api.github.com/repos/" + owner + "/" + repository + "/commits/" + topSha);
 		get.addHeader("Accept", "application/vnd.github.v3+json");
 
-		CommitInfoResponse commitInfoResponse;
 		try (CloseableHttpResponse response = httpclient.execute(get);
 				Reader contentReader = new InputStreamReader(response.getEntity().getContent());) {
 			String str = IoUtils.readerToString(contentReader);
-			commitInfoResponse = gson.fromJson(str, CommitInfoResponse.class);
-			// commitInfoResponse = gson.fromJson(contentReader, CommitInfoResponse.class);
+			return gson.fromJson(str, CommitInfoResponse.class);
 		}
+	}
 
-		List<FileInfo> fileInfos = new ArrayList<>();
+	private static Collection<FileInfo> getTreeFiles(CloseableHttpClient httpclient, Gson gson, String accessToken,
+			String owner, String repository, String sha) throws IOException {
 
 		// GET /repos/{owner}/{repo}/git/trees/{tree_sha}
-		get = new HttpGet("https://api.github.com/repos/" + owner + "/" + repository + "/git/trees/"
-				+ commitInfoResponse.getTree().getSha() + "?recursive=1");
+		HttpGet get = new HttpGet(
+				"https://api.github.com/repos/" + owner + "/" + repository + "/git/trees/" + sha + "?recursive=1");
 		get.addHeader("Authorization", "token " + accessToken);
 		get.addHeader("Accept", "application/vnd.github.v3+json");
 
+		List<FileInfo> fileInfos = new ArrayList<>();
 		try (CloseableHttpResponse response = httpclient.execute(get)) {
 			String str = IoUtils.inputStreamToString(response.getEntity().getContent());
 			// TreeInfoResponse treeInfoResponse =
@@ -184,9 +211,13 @@ public class TestCheckPubMain {
 
 		post.setEntity(new StringEntity(gson.toJson(request)));
 
-		CloseableHttpResponse response = httpclient.execute(post);
-
-		// Builds the JWT and serializes it to a compact, URL-safe string
-		System.out.println(IoUtils.inputStreamToString(response.getEntity().getContent()));
+		try (CloseableHttpResponse response = httpclient.execute(post)) {
+			String str = IoUtils.inputStreamToString(response.getEntity().getContent());
+			IdResponse idResponse = gson.fromJson(str, IdResponse.class);
+			@SuppressWarnings("unused")
+			long id = idResponse.getId();
+			// Builds the JWT and serializes it to a compact, URL-safe string
+			System.out.println(str);
+		}
 	}
 }

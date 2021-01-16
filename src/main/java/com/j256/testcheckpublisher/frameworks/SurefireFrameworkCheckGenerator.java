@@ -33,9 +33,6 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 	private final Pattern XML_PATTERN = Pattern.compile("TEST-(.*)\\.xml");
 	private final boolean SHOW_NOTICE = true;
 	private final int DEFAULT_LINE_NUMBER = 1;
-	// XXX
-	@SuppressWarnings("unused")
-	private final int MAX_NUMBER_ANNOTATIONS = 50;
 
 	@Override
 	public CheckRunOutput createRequest(String owner, String repository, String commitSha,
@@ -126,9 +123,10 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 
 			for (TestCase test : suite.getTestcases()) {
 
-				Level level;
 				Problem failure = test.getFailure();
 				Problem error = test.getError();
+
+				Level level;
 				Problem problem;
 				if (failure != null) {
 					problem = failure;
@@ -149,28 +147,33 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 				if (lineNumber == DEFAULT_LINE_NUMBER) {
 					lineNumber = findLineNumber(fileInfo.getName(), problem.body);
 				}
+
+				/*
+				 * If the file is referenced in the commit then we an annotation otherwise we add into the text of the
+				 * check a reference to it. You might check in a change to a source file and fail a unit test not
+				 * mentioned in the commit.
+				 */
 				output.addAnnotation(new CheckRunAnnotation(fileInfo.getPath(), lineNumber, lineNumber, level,
 						test.getClassName() + "." + test.getName() + " failed test",
 						problem.type + ": " + problem.message, problem.body));
-
-				/*
-				 * XXX: how can I tell when the annotation is going to properly mark a file versus and therefore I don't
-				 * need to do something like this.
-				 */
-				textSb.append("* ")
-						.append(problem.type)
-						.append(" on ")
-						.append("https://github.com/")
-						.append(owner)
-						.append('/')
-						.append(repository)
-						.append("/blob/")
-						.append(commitSha)
-						.append('/')
-						.append(fileInfo.getPath())
-						.append("#L")
-						.append(lineNumber)
-						.append("\n");
+				if (!fileInfo.isInCommit()) {
+					textSb.append("* ")
+							.append(problem.type)
+							.append(": ")
+							.append(problem.message)
+							.append(' ')
+							.append("https://github.com/")
+							.append(owner)
+							.append('/')
+							.append(repository)
+							.append("/blob/")
+							.append(commitSha)
+							.append('/')
+							.append(fileInfo.getPath())
+							.append("#L")
+							.append(lineNumber)
+							.append("\n");
+				}
 			}
 		}
 	}

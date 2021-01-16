@@ -12,6 +12,7 @@ public class FileInfo {
 	final String path;
 	final String name;
 	final String sha;
+	boolean inCommit;
 
 	public FileInfo(String path, String sha) {
 		this.path = path;
@@ -35,6 +36,14 @@ public class FileInfo {
 
 	public String getSha() {
 		return sha;
+	}
+
+	public boolean isInCommit() {
+		return inCommit;
+	}
+
+	public void setInCommit(boolean inCommit) {
+		this.inCommit = inCommit;
 	}
 
 	@Override

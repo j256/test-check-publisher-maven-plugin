@@ -56,11 +56,6 @@ public class CheckRunRequest {
 				this.annotations = new ArrayList<>();
 			}
 			this.annotations.add(annotation);
-			if (annotation.level == Level.FAILURE) {
-				failureCount++;
-			} else if (annotation.level == Level.ERROR) {
-				errorCount++;
-			}
 		}
 
 		public int getTestCount() {
