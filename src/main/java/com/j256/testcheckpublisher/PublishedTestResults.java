@@ -10,6 +10,7 @@ import com.j256.testcheckpublisher.frameworks.FrameworkTestResults;
 public class PublishedTestResults {
 
 	public static final long MAGIC_VALUE = 237347409389423823L;
+	public static final String SECRET_ENV = "TEST_CHECK_PUBLISHER_SECRET";
 
 	private long magic;
 	private String owner;

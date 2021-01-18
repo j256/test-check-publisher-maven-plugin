@@ -33,8 +33,8 @@ public class GitStateUtility {
 			return null;
 		}
 
-		String repository = System.getenv("CIRCLE_PROJECT_REPONAME");
 		String owner = System.getenv("CIRCLE_PROJECT_USERNAME");
+		String repository = System.getenv("CIRCLE_PROJECT_REPONAME");
 		String commitSha = System.getenv("CIRCLE_SHA1");
 
 		return new GitState(owner, repository, commitSha);
@@ -56,7 +56,7 @@ public class GitStateUtility {
 		}
 
 		String owner = matcher.group(1);
-		String repository = matcher.group(1);
+		String repository = matcher.group(2);
 
 		// git log -1 gives the sha
 		command = new String[] { "git", "log", "-1" };

@@ -19,14 +19,13 @@ import com.j256.testcheckpublisher.frameworks.SurefireFrameworkCheckGenerator;
 public class TestCheckPubMain {
 
 	private static final String PUBLISH_URL = "https://testcheckpublisher.256stuff.com/";
-	private static final String SECRET_ENV = "TEST_CHECK_PUBLISHER_SECRET";
 	private static final int MAX_NUM_RESULTS = 100;
 
 	public static void main(String[] args) throws Exception {
 
-		String secret = System.getenv(SECRET_ENV);
+		String secret = System.getenv(PublishedTestResults.SECRET_ENV);
 		if (secret == null) {
-			System.err.println("Could not find required env variable: " + SECRET_ENV);
+			System.err.println("Could not find required env variable: " + PublishedTestResults.SECRET_ENV);
 			System.exit(1);
 		}
 		GitState gitState = GitStateUtility.findGitState();
