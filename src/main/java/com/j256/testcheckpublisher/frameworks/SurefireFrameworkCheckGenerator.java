@@ -2,23 +2,19 @@ package com.j256.testcheckpublisher.frameworks;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.PrintWriter;
 import java.io.Reader;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.StringWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.j256.testcheckpublisher.FileInfo;
-import com.j256.testcheckpublisher.IoUtils;
+import com.j256.testcheckpublisher.frameworks.FrameworkTestResults.TestFileResult;
+import com.j256.testcheckpublisher.frameworks.FrameworkTestResults.TestFileResult.TestLevel;
 import com.j256.testcheckpublisher.frameworks.SurefireTestSuite.Problem;
 import com.j256.testcheckpublisher.frameworks.SurefireTestSuite.TestCase;
-import com.j256.testcheckpublisher.github.CheckRunRequest.CheckRunAnnotation;
-import com.j256.testcheckpublisher.github.CheckRunRequest.CheckRunOutput;
-import com.j256.testcheckpublisher.github.CheckRunRequest.Level;
 
 /**
  * Generate a check-run object from surefire XML files.
@@ -35,147 +31,67 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 	private final int DEFAULT_LINE_NUMBER = 1;
 
 	@Override
-	public CheckRunOutput createRequest(String owner, String repository, String commitSha,
-			Collection<FileInfo> fileInfos) throws Exception {
+	public void loadTestResults(FrameworkTestResults testResults) {
 
-		CheckRunOutput output = new CheckRunOutput("", "", "");
+		testResults.setName("Surefire test results");
 
-		/*
-		 * Create a map of path portions to file names, the idea being that we may have classes not laid out in a nice
-		 * hierarchy and we don't want to read all files looking for package ...
-		 */
-		Map<String, FileInfo> nameMap = new HashMap<>();
-		for (FileInfo fileInfo : fileInfos) {
-			String path = fileInfo.getPath();
-			nameMap.put(path, fileInfo);
-			nameMap.put(fileInfo.getName(), fileInfo);
-			int index = 0;
-			while (true) {
-				int nextIndex = path.indexOf(File.separatorChar, index);
-				if (nextIndex < 0) {
-					break;
-				}
-				index = nextIndex + 1;
-				nameMap.put(path.substring(index), fileInfo);
-			}
-			// should be just the name
-			nameMap.put(path.substring(index), fileInfo);
-		}
-
-		StringBuilder textSb = new StringBuilder();
-
+		// XXX: should we locate the surefire-dir?
 		File dir = new File(SUREFIRE_DIR);
 		for (File file : dir.listFiles()) {
 			Matcher matcher = XML_PATTERN.matcher(file.getName());
-			if (!matcher.matches()) {
-				continue;
-			}
-
-			String className = matcher.group(1);
-			FileInfo fileInfo = mapFileByClass(nameMap, className);
-			if (fileInfo == null) {
-				// XXX: could not locate this file
-				System.err.println("WARNING: could not locate file associated with class: " + className);
-			} else {
-				addTestSuite(owner, repository, commitSha, output, file, className, fileInfo, textSb);
+			if (matcher.matches()) {
+				String className = matcher.group(1);
+				String path = classToPath(className);
+				try {
+					addTestSuite(testResults, file, className, path);
+				} catch (Exception e) {
+					StringWriter writer = new StringWriter();
+					e.printStackTrace(new PrintWriter(writer));
+					testResults.addFileResult(new TestFileResult(path, 1, TestLevel.ERROR, 0.0F, className,
+							"could not parse surefire XML file: " + file, writer.toString()));
+				}
 			}
 		}
-
-		String title = output.getTestCount() + " tests, " + output.getErrorCount() + " errors, "
-				+ output.getFailureCount() + " failures";
-		output.setTitle(title);
-		output.setText(textSb.toString());
-
-		return output;
 	}
 
-	private FileInfo mapFileByClass(Map<String, FileInfo> nameMap, String className) {
-		String path = className.replace('.', File.separatorChar) + ".java";
-
-		FileInfo result = nameMap.get(path);
-		if (result != null) {
-			return result;
-		}
-
-		int index = 0;
-		while (true) {
-			int nextIndex = path.indexOf(File.separatorChar, index);
-			if (nextIndex < 0) {
-				break;
-			}
-			index = nextIndex + 1;
-			result = nameMap.get(path.substring(index));
-			if (result != null) {
-				return result;
-			}
-		}
-		// should be just the name
-		return nameMap.get(path.substring(index));
-	}
-
-	private void addTestSuite(String owner, String repository, String commitSha, CheckRunOutput output, File file,
-			String className, FileInfo fileInfo, StringBuilder textSb) throws Exception {
+	private void addTestSuite(FrameworkTestResults testResults, File file, String className, String path)
+			throws Exception {
 
 		try (Reader reader = new FileReader(file)) {
-			String str = IoUtils.readerToString(reader);
-			SurefireTestSuite suite = xmlMapper.readValue(str, SurefireTestSuite.class);
-			output.addCounts(suite.numTests, suite.numFailures, suite.numErrors);
+			SurefireTestSuite suite = xmlMapper.readValue(reader, SurefireTestSuite.class);
+			testResults.addCounts(suite.numTests, suite.numFailures, suite.numErrors);
 
 			for (TestCase test : suite.getTestcases()) {
 
 				Problem failure = test.getFailure();
 				Problem error = test.getError();
 
-				Level level;
+				TestLevel level;
 				Problem problem;
 				if (failure != null) {
 					problem = failure;
-					level = Level.FAILURE;
+					level = TestLevel.FAILURE;
 				} else if (error != null) {
 					problem = error;
-					level = Level.ERROR;
+					level = TestLevel.ERROR;
 				} else {
 					if (SHOW_NOTICE) {
-						output.addAnnotation(new CheckRunAnnotation(fileInfo.getPath(), 1, 1, Level.NOTICE,
-								test.getName() + " succeeded", "no errors", null));
+						testResults.addFileResult(new TestFileResult(path, 1, TestLevel.NOTICE, test.timeSeconds,
+								className + "." + test.getName(), "succeeded, no errors", null));
 					}
 					continue;
 				}
 
 				// look to find if we have file:line format
 				int lineNumber = findLineNumber(className, problem.body);
-				if (lineNumber == DEFAULT_LINE_NUMBER) {
-					lineNumber = findLineNumber(fileInfo.getName(), problem.body);
-				}
-
-				/*
-				 * If the file is referenced in the commit then we an annotation otherwise we add into the text of the
-				 * check a reference to it. You might check in a change to a source file and fail a unit test not
-				 * mentioned in the commit.
-				 */
-				output.addAnnotation(new CheckRunAnnotation(fileInfo.getPath(), lineNumber, lineNumber, level,
-						test.getClassName() + "." + test.getName() + " failed test",
-						problem.type + ": " + problem.message, problem.body));
-				if (!fileInfo.isInCommit()) {
-					textSb.append("* ")
-							.append(problem.type)
-							.append(": ")
-							.append(problem.message)
-							.append(' ')
-							.append("https://github.com/")
-							.append(owner)
-							.append('/')
-							.append(repository)
-							.append("/blob/")
-							.append(commitSha)
-							.append('/')
-							.append(fileInfo.getPath())
-							.append("#L")
-							.append(lineNumber)
-							.append("\n");
-				}
+				testResults.addFileResult(new TestFileResult(path, lineNumber, level, test.timeSeconds,
+						className + "." + test.getName(), problem.type + ": " + problem.message, problem.body));
 			}
 		}
+	}
+
+	private String classToPath(String className) {
+		return className.replace('.', '/');
 	}
 
 	private int findLineNumber(String fileName, String body) {
