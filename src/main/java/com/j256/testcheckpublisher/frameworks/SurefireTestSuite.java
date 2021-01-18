@@ -14,15 +14,15 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
 public class SurefireTestSuite {
 
 	@JacksonXmlProperty(isAttribute = true)
-	String name;
+	private String name;
 	@JacksonXmlProperty(isAttribute = true, localName = "time")
-	float timeSeconds;
+	private float timeSeconds;
 	@JacksonXmlProperty(isAttribute = true, localName = "tests")
-	int numTests;
+	private int numTests;
 	@JacksonXmlProperty(isAttribute = true, localName = "errors")
-	int numErrors;
+	private int numErrors;
 	@JacksonXmlProperty(isAttribute = true, localName = "failures")
-	int numFailures;
+	private int numFailures;
 
 	@JacksonXmlProperty(localName = "testcase")
 	@JacksonXmlElementWrapper(useWrapping = false)

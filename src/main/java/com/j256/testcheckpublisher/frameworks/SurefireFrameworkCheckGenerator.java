@@ -59,7 +59,7 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 
 		try (Reader reader = new FileReader(file)) {
 			SurefireTestSuite suite = xmlMapper.readValue(reader, SurefireTestSuite.class);
-			testResults.addCounts(suite.numTests, suite.numFailures, suite.numErrors);
+			testResults.addCounts(suite.getNumTests(), suite.getNumFailures(), suite.getNumErrors());
 
 			for (TestCase test : suite.getTestcases()) {
 
