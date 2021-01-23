@@ -1,6 +1,6 @@
-package com.j256.testcheckpublisher;
+package com.j256.testcheckpublisher.plugin;
 
-import com.j256.testcheckpublisher.frameworks.FrameworkTestResults;
+import com.j256.testcheckpublisher.plugin.frameworks.FrameworkTestResults;
 
 /**
  * Results from the test framework with header information.

@@ -1,4 +1,4 @@
-package com.j256.testcheckpublisher.gitcontext;
+package com.j256.testcheckpublisher.plugin.gitcontext;
 
 /**
  * Utility functions that find the state of our local git repo by environmental variable or other means.

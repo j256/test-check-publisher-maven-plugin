@@ -1,4 +1,4 @@
-package com.j256.testcheckpublisher.frameworks;
+package com.j256.testcheckpublisher.plugin.frameworks;
 
 import java.io.File;
 import java.io.FileReader;
@@ -11,10 +11,10 @@ import java.util.regex.Pattern;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.j256.testcheckpublisher.frameworks.FrameworkTestResults.TestFileResult;
-import com.j256.testcheckpublisher.frameworks.FrameworkTestResults.TestFileResult.TestLevel;
-import com.j256.testcheckpublisher.frameworks.SurefireTestSuite.Problem;
-import com.j256.testcheckpublisher.frameworks.SurefireTestSuite.TestCase;
+import com.j256.testcheckpublisher.plugin.frameworks.FrameworkTestResults.TestFileResult;
+import com.j256.testcheckpublisher.plugin.frameworks.FrameworkTestResults.TestFileResult.TestLevel;
+import com.j256.testcheckpublisher.plugin.frameworks.SurefireTestSuite.Problem;
+import com.j256.testcheckpublisher.plugin.frameworks.SurefireTestSuite.TestCase;
 
 /**
  * Generate a check-run object from surefire XML files.

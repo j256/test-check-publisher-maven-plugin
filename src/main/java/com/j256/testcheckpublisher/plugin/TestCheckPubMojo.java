@@ -1,4 +1,4 @@
-package com.j256.testcheckpublisher;
+package com.j256.testcheckpublisher.plugin;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -21,11 +21,11 @@ import org.apache.maven.plugins.annotations.Parameter;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.j256.testcheckpublisher.frameworks.FrameworkTestResults;
-import com.j256.testcheckpublisher.frameworks.SurefireFrameworkCheckGenerator;
-import com.j256.testcheckpublisher.gitcontext.CircleCiGitContextFinder;
-import com.j256.testcheckpublisher.gitcontext.CommandLineGitContextFinder;
-import com.j256.testcheckpublisher.gitcontext.GitContextFinder.GitContext;
+import com.j256.testcheckpublisher.plugin.frameworks.FrameworkTestResults;
+import com.j256.testcheckpublisher.plugin.frameworks.SurefireFrameworkCheckGenerator;
+import com.j256.testcheckpublisher.plugin.gitcontext.CircleCiGitContextFinder;
+import com.j256.testcheckpublisher.plugin.gitcontext.CommandLineGitContextFinder;
+import com.j256.testcheckpublisher.plugin.gitcontext.GitContextFinder.GitContext;
 
 /**
  * Maven plugin that posts the check results to the server.

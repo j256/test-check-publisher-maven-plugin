@@ -1,4 +1,4 @@
-package com.j256.testcheckpublisher.gitcontext;
+package com.j256.testcheckpublisher.plugin.gitcontext;
 
 /**
  * Class which finds the git context needed to publish the tests.

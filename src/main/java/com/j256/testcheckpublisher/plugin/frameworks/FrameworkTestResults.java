@@ -1,4 +1,4 @@
-package com.j256.testcheckpublisher.frameworks;
+package com.j256.testcheckpublisher.plugin.frameworks;
 
 import java.util.ArrayList;
 import java.util.Collection;

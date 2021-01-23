@@ -1,4 +1,4 @@
-package com.j256.testcheckpublisher.gitcontext;
+package com.j256.testcheckpublisher.plugin.gitcontext;
 
 import java.io.BufferedReader;
 import java.io.IOException;

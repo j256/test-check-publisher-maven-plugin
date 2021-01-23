@@ -1,4 +1,4 @@
-package com.j256.testcheckpublisher.frameworks;
+package com.j256.testcheckpublisher.plugin.frameworks;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
