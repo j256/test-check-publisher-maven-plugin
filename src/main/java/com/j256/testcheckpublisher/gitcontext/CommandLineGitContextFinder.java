@@ -1,4 +1,4 @@
-package com.j256.testcheckpublisher;
+package com.j256.testcheckpublisher.gitcontext;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,35 +12,18 @@ import java.util.regex.Pattern;
  * 
  * @author graywatson
  */
-public class GitStateUtility {
+public class CommandLineGitContextFinder implements GitContextFinder {
 
 	private static final Pattern REMOTE_ORGIN_URL_PATTERN = Pattern.compile(".*:([^/]+)/(.+)\\.git");
 	private static final Pattern LOG_PATTERN = Pattern.compile("commit ([^ ]+) ?.*");
 
-	public static GitState findGitState() {
-		GitState state = checkCircleCi();
-		if (state != null) {
-			return state;
-		}
-
-		return gitCommandLine();
+	@Override
+	public boolean isRunning() {
+		return true;
 	}
 
-	private static GitState checkCircleCi() {
-		// also CI
-		String val = System.getenv("CIRCLECI");
-		if (!Boolean.parseBoolean(val)) {
-			return null;
-		}
-
-		String owner = System.getenv("CIRCLE_PROJECT_USERNAME");
-		String repository = System.getenv("CIRCLE_PROJECT_REPONAME");
-		String commitSha = System.getenv("CIRCLE_SHA1");
-
-		return new GitState(owner, repository, commitSha);
-	}
-
-	private static GitState gitCommandLine() {
+	@Override
+	public GitContext findContext() {
 
 		// git config --get remote.origin.url to get owner, repo
 		String[] command = new String[] { "git", "config", "--get", "remote.origin.url" };
@@ -72,7 +55,7 @@ public class GitStateUtility {
 		}
 
 		String commitSha = matcher.group(1);
-		return new GitState(owner, repository, commitSha);
+		return new GitContext(owner, repository, commitSha);
 	}
 
 	private static String getFirstLineOfCommand(String[] command) {
@@ -94,34 +77,6 @@ public class GitStateUtility {
 			if (process != null) {
 				process.destroy();
 			}
-		}
-	}
-
-	/**
-	 * State information about the local git repo.
-	 */
-	public static class GitState {
-
-		private String owner;
-		private String repository;
-		private String commitSha;
-
-		public GitState(String owner, String repository, String commitSha) {
-			this.owner = owner;
-			this.repository = repository;
-			this.commitSha = commitSha;
-		}
-
-		public String getOwner() {
-			return owner;
-		}
-
-		public String getRepository() {
-			return repository;
-		}
-
-		public String getCommitSha() {
-			return commitSha;
 		}
 	}
 }

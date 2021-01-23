@@ -94,35 +94,41 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 		return className.replace('.', '/');
 	}
 
-	private int findLineNumber(String fileName, String body) {
+	// xxx not working, i think it is looking for com.j256.Foo:number
+	private int findLineNumber(String className, String body) {
 		if (body == null) {
 			return DEFAULT_LINE_NUMBER;
 		}
 
 		int index = 0;
 		while (true) {
-			index = body.indexOf(fileName, index);
+			// at com.j256.testcheckpublisher.TestCheckPubMainTest.test(TestCheckPubMainTest.java:11)
+			index = body.indexOf(className, index);
 			if (index < 0) {
 				return DEFAULT_LINE_NUMBER;
 			}
-			index += fileName.length();
+			index += className.length();
 			// make sure we have a ':' and a number
-			if (body.length() > index) {
-				if (body.charAt(index++) != ':') {
-					continue;
-				}
-				int lineNum = 0;
-				while (body.length() > index) {
-					char ch = body.charAt(index++);
+			boolean number = false;
+			int lineNum = 0;
+			while (index < body.length()) {
+				char ch = body.charAt(index++);
+				if (number) {
 					if (Character.isDigit(ch)) {
 						lineNum = lineNum * 10 + (ch - '0');
+						continue;
 					} else {
 						break;
 					}
 				}
-				if (lineNum > 0) {
-					return lineNum;
+				if (ch == ':') {
+					number = true;
+				} else if (Character.isWhitespace(ch)) {
+					break;
 				}
+			}
+			if (lineNum > 0) {
+				return lineNum;
 			}
 		}
 	}
