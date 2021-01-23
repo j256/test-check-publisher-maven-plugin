@@ -31,7 +31,22 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 	private final int DEFAULT_LINE_NUMBER = 1;
 
 	@Override
-	public void loadTestResults(FrameworkTestResults testResults) {
+	public void loadTestResults(FrameworkTestResults testResults, File testWorkingDir) {
+
+		if (testWorkingDir == null) {
+			testWorkingDir = new File(SUREFIRE_DIR);
+		}
+
+		if (!testWorkingDir.exists()) {
+			testResults.addFileResult(new TestFileResult(testWorkingDir.getPath(), 1, TestLevel.ERROR, 0.0F,
+					"test.working.dir", "Test working dir does not exist: " + testWorkingDir, null));
+			return;
+		}
+		if (!testWorkingDir.isDirectory()) {
+			testResults.addFileResult(new TestFileResult(testWorkingDir.getPath(), 1, TestLevel.ERROR, 0.0F,
+					"test.working.dir", "Test working dir is not a directory: " + testWorkingDir, null));
+			return;
+		}
 
 		testResults.setName("Surefire test results");
 
@@ -48,7 +63,7 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 					StringWriter writer = new StringWriter();
 					e.printStackTrace(new PrintWriter(writer));
 					testResults.addFileResult(new TestFileResult(path, 1, TestLevel.ERROR, 0.0F, className,
-							"could not parse surefire XML file: " + file, writer.toString()));
+							"Could not parse surefire XML file: " + file, writer.toString()));
 				}
 			}
 		}

@@ -61,6 +61,34 @@ public class FrameworkTestResults {
 	}
 
 	/**
+	 * Pretty print our results for logging.
+	 */
+	public String asString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(name).append(": ");
+		sb.append(numTests).append(" tests, ");
+		// failures all of the time
+		sb.append(numFailures).append(" failures, ");
+		// errors only if there are some
+		if (numErrors > 0) {
+			sb.append(numErrors).append(" errors, ");
+		}
+		if (fileResults == null) {
+			sb.append('0');
+		} else {
+			sb.append(fileResults.size());
+		}
+		sb.append(" file-results");
+		return sb.toString();
+	}
+
+	@Override
+	public String toString() {
+		return "FrameworkTestResults [name=" + name + ", numTests=" + numTests + ", numFailures=" + numFailures
+				+ ", numErrors=" + numErrors + ", numFileResults=" + fileResults.size() + "]";
+	}
+
+	/**
 	 * File result associated with a specific test.
 	 */
 	public static class TestFileResult {

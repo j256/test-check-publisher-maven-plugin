@@ -43,5 +43,10 @@ public interface GitContextFinder {
 		public String getCommitSha() {
 			return commitSha;
 		}
+
+		@Override
+		public String toString() {
+			return "GitContext [owner=" + owner + ", repo=" + repository + ", sha=" + commitSha + "]";
+		}
 	}
 }

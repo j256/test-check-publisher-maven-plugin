@@ -3,9 +3,10 @@
 	xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.j256.testcheckpublisher</groupId>
-	<artifactId>test-check-publisher-plugin</artifactId>
+	<artifactId>test-check-publisher-maven-plugin</artifactId>
 	<version>0.1-SNAPSHOT</version>
 	<packaging>maven-plugin</packaging>
+	<name>Test Check Publisher Maven Plugin</name>
 	<licenses>
 		<license>
 			<name>ISC License</name>
@@ -23,6 +24,7 @@
 		<!-- optional dependencies -->
 		<gson-version>2.2.2</gson-version>
 		<httpclient-version>4.5.13</httpclient-version>
+		<maven-plugin-api-version>3.6.3</maven-plugin-api-version>
 
 		<!-- test dependencies -->
 		<junit-version>4.13.1</junit-version>
@@ -69,7 +71,7 @@
 		</profile>
 	</profiles>
 	<build>
-		<finalName>test-check-publisher</finalName>
+		<finalName>test-check-publisher-maven-plugin</finalName>
 		<!-- Resources -->
 		<resources>
 			<resource>
@@ -92,11 +94,6 @@
 					<source>1.8</source>
 					<target>1.8</target>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.6</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -139,26 +136,16 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.4</version>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-eclipse-plugin</artifactId>
-				<version>2.9</version>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.4</version>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.19.1</version>
 				<configuration>
 					<useSystemClassLoader>false</useSystemClassLoader>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-plugin-plugin</artifactId>
+				<version>3.6.0</version>
 			</plugin>
 		</plugins>
 		<pluginManagement>
@@ -173,7 +160,8 @@
 								<pluginExecution>
 									<pluginExecutionFilter>
 										<groupId>org.apache.maven.plugins</groupId>
-										<artifactId>maven-enforcer-plugin</artifactId>
+										<artifactId>
+	maven-enforcer-plugin</artifactId>
 										<versionRange>[1.0-beta-1,)</versionRange>
 										<goals>
 											<goal>enforce</goal>
@@ -224,13 +212,18 @@
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-plugin-api</artifactId>
-			<version>3.0</version>
+			<version>${maven-plugin-api-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.maven.plugin-tools</groupId>
 			<artifactId>maven-plugin-annotations</artifactId>
 			<version>3.4</version>
 			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven.plugin-tools</groupId>
+			<artifactId>maven-plugin-tools-api</artifactId>
+			<version>3.6.0</version>
 		</dependency>
 
 		<!-- test dependencies -->
