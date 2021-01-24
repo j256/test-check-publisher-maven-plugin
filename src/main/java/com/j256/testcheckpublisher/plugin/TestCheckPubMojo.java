@@ -36,22 +36,52 @@ public class TestCheckPubMojo extends AbstractMojo {
 
 	private static final String DEFAULT_SERVER_URL = "https://testcheckpublisher.256stuff.com/";
 	public static final String DEFAULT_SECRET_ENV_NAME = "TEST_CHECK_PUBLISHER_SECRET";
+	public static final int MAX_NUM_RESULTS = 50;
+	public static final String MAX_NUM_RESULTS_STR = "50";
+	public static final int ULTIMATE_MAX_NUM_RESULTS = 500;
+	public static final String DEFAULT_SECRET_VALUE =
+			"None.  This should probably not be used for security reasons.  Use the secretEnvName instead.";
 
-	@Parameter(property = "server.url", defaultValue = DEFAULT_SERVER_URL)
-	private String publishUrl;
-	@Parameter(property = "max.num.results", defaultValue = "100")
-	private int maxNumResults;
-	@Parameter(property = "secret.env.name", defaultValue = DEFAULT_SECRET_ENV_NAME)
+	@Parameter(defaultValue = DEFAULT_SERVER_URL)
+	private String serverUrl;
+	@Parameter(defaultValue = MAX_NUM_RESULTS_STR)
+	private int maxNumResults = -1;
+	@Parameter(defaultValue = DEFAULT_SECRET_ENV_NAME)
 	private String secretEnvName;
-	@Parameter(property = "framework", defaultValue = "SUREFIRE")
+	/**
+	 * This is not recommended to use for security reasons so that your secret is not checked in or otherwise exposed.
+	 * Use the {@link #secretEnvName} and set the secret in an environment variable.
+	 */
+	@Parameter(defaultValue = DEFAULT_SECRET_VALUE)
+	private String secretValue;
+	@Parameter(defaultValue = "SUREFIRE")
 	private Framework framework;
-	@Parameter(property = "context", defaultValue = "GIT_COMMAND")
-	private ContextFinder contextFinder;
-	@Parameter(property = "test.working.dir")
-	private File testWorkingDir;
+	@Parameter(defaultValue = "GIT_COMMAND")
+	private ContextFinder context;
+	@Parameter
+	private File testReportDir;
+	@Parameter
+	private File sourceDir;
 
 	@Override
 	public void execute() throws MojoExecutionException {
+
+		if (secretEnvName == null) {
+			secretEnvName = DEFAULT_SECRET_ENV_NAME;
+		}
+		if (serverUrl == null) {
+			serverUrl = DEFAULT_SERVER_URL;
+		}
+		if (maxNumResults < 0) {
+			maxNumResults = MAX_NUM_RESULTS;
+		}
+		if (framework == null) {
+			framework = Framework.SUREFIRE;
+		}
+		if (context == null) {
+			context = ContextFinder.GIT_COMMAND;
+		}
+
 		Log log = getLog();
 		log.info("Publishing test information to server...");
 		try {
@@ -61,18 +91,53 @@ public class TestCheckPubMojo extends AbstractMojo {
 		}
 	}
 
+	public void setServerUrl(String serverUrl) {
+		this.serverUrl = serverUrl;
+	}
+
+	public void setMaxNumResults(int maxNumResults) {
+		this.maxNumResults = maxNumResults;
+	}
+
+	public void setSecretEnvName(String secretEnvName) {
+		this.secretEnvName = secretEnvName;
+	}
+
+	public void setSecretValue(String secretValue) {
+		this.secretValue = secretValue;
+	}
+
+	public void setFramework(Framework framework) {
+		this.framework = framework;
+	}
+
+	public void setContext(ContextFinder context) {
+		this.context = context;
+	}
+
+	public void setTestReportDir(File testReportDir) {
+		this.testReportDir = testReportDir;
+	}
+
+	public void setSourceDir(File sourceDir) {
+		this.sourceDir = sourceDir;
+	}
+
 	private void publish(Log log) throws IOException {
 
 		// look for our secret environ variable
-		String secret = System.getenv(secretEnvName);
-		if (secret == null) {
-			log.error("Could not find required env variable: " + secretEnvName);
-			System.exit(1);
+		String secret = secretValue;
+		if (secret == null || secret.equals(DEFAULT_SECRET_VALUE)) {
+			secret = System.getenv(secretEnvName);
+			if (secret == null) {
+				log.error("Could not find required env variable: " + secretEnvName);
+				System.exit(1);
+			}
 		}
 
 		// find the git-context of the local directory structure
 		GitContext gitContext;
-		switch (contextFinder) {
+		switch (context) {
 			case CIRCLE_CI:
 				gitContext = new CircleCiGitContextFinder().findContext();
 				break;
@@ -82,10 +147,10 @@ public class TestCheckPubMojo extends AbstractMojo {
 				break;
 		}
 		if (gitContext == null) {
-			log.error("Could not determine git state using context: " + contextFinder);
+			log.error("Could not determine git state using context: " + context);
 			System.exit(1);
 		}
-		log.debug("Git context finder " + contextFinder + ": " + gitContext);
+		log.debug("Git context finder " + context + ": " + gitContext);
 
 		SurefireFrameworkCheckGenerator frameworkGenerator;
 		switch (framework) {
@@ -95,9 +160,12 @@ public class TestCheckPubMojo extends AbstractMojo {
 				break;
 		}
 
+		if (maxNumResults > ULTIMATE_MAX_NUM_RESULTS) {
+			maxNumResults = ULTIMATE_MAX_NUM_RESULTS;
+		}
 		FrameworkTestResults frameworkResults = new FrameworkTestResults(maxNumResults);
 		log.debug("Loading tests results from framework generator " + framework);
-		frameworkGenerator.loadTestResults(frameworkResults, testWorkingDir);
+		frameworkGenerator.loadTestResults(frameworkResults, testReportDir, sourceDir, log);
 
 		PublishedTestResults results = new PublishedTestResults(gitContext.getOwner(), gitContext.getRepository(),
 				gitContext.getCommitSha(), secret, frameworkResults);
@@ -112,7 +180,7 @@ public class TestCheckPubMojo extends AbstractMojo {
 		CloseableHttpClient httpclient = HttpClients.createDefault();
 		Gson gson = new GsonBuilder().create();
 
-		HttpPost post = new HttpPost(publishUrl);
+		HttpPost post = new HttpPost(serverUrl);
 		post.setEntity(new StringEntity(gson.toJson(results)));
 
 		try (CloseableHttpResponse response = httpclient.execute(post);

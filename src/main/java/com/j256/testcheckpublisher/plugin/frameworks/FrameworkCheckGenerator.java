@@ -2,6 +2,8 @@ package com.j256.testcheckpublisher.plugin.frameworks;
 
 import java.io.File;
 
+import org.apache.maven.plugin.logging.Log;
+
 /**
  * Framework which processes its metadata and creates a check-run request object.
  * 
@@ -10,7 +12,8 @@ import java.io.File;
 public interface FrameworkCheckGenerator {
 
 	/**
-	 * Return the request for the framework.
+	 * Populate the testResults class with information from this framework.
 	 */
-	public void loadTestResults(FrameworkTestResults testResults, File testWorkingDir) throws Exception;
+	public void loadTestResults(FrameworkTestResults testResults, File testReportDir, File sourceDir, Log log)
+			throws Exception;
 }
