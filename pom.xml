@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.j256.testcheckpublisher</groupId>
 	<artifactId>test-check-publisher-maven-plugin</artifactId>
@@ -46,6 +45,11 @@
 			<timezone>-5</timezone>
 		</developer>
 	</developers>
+	<scm>
+		<url>https://github.com/j256/test-check-publisher-maven-plugin</url>
+		<connection>scm:git:ssh://git@github.com/j256/test-check-publisher-maven-plugin.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com/j256/test-check-publisher-maven-plugin.git</developerConnection>
+	</scm>
 	<profiles>
 		<profile>
 			<id>disable-java8-doclint</id>
@@ -182,7 +186,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
