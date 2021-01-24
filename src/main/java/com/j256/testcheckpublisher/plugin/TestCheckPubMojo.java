@@ -36,7 +36,7 @@ import com.j256.testcheckpublisher.plugin.gitcontext.GitContextFinder.GitContext
 public class TestCheckPubMojo extends AbstractMojo {
 
 	private static final String DEFAULT_SERVER_URL = "https://testcheckpublisher.256stuff.com/";
-	private static final String DEFAULT_SECRET_ENV_NAME = "TEST_CHECK_PUBLISHER_SECRET";
+	public static final String DEFAULT_SECRET_ENV_NAME = "TEST_CHECK_PUBLISHER_SECRET";
 
 	@Parameter(property = "server.url", defaultValue = DEFAULT_SERVER_URL)
 	private String publishUrl;
