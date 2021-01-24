@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.j256.testcheckpublisher</groupId>
 	<artifactId>test-check-publisher-maven-plugin</artifactId>
-	<version>0.3-SNAPSHOT</version>
+	<version>0.3</version>
 	<packaging>maven-plugin</packaging>
 	<name>Test Check Publisher Maven Plugin</name>
 	<licenses>
@@ -146,6 +146,7 @@
 				<version>2.19.1</version>
 				<configuration>
 					<useSystemClassLoader>false</useSystemClassLoader>
+					<trimStackTrace>false</trimStackTrace>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -193,14 +194,6 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.19.1</version>
-				<configuration>
-					<useSystemClassLoader>false</useSystemClassLoader>
-				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

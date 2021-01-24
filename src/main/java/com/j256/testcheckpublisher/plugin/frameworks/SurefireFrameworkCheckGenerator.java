@@ -44,7 +44,13 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 	public void loadTestResults(FrameworkTestResults testResults, File testReportDir, File sourceDir, Log log) {
 
 		testReportDir = checkDir("Surefire test report", testReportDir, SUREFIRE_DIR, log);
+		if (testReportDir == null) {
+			return;
+		}
 		sourceDir = checkDir("Source", sourceDir, ".", log);
+		if (sourceDir == null) {
+			return;
+		}
 
 		Map<String, File> fileNameMap = getFileNameMap(sourceDir);
 
