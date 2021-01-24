@@ -20,4 +20,4 @@ the following to your pom.xml file:
 
 After you have run your unit tests, you need to execute:
 
-	mvn 
+	mvn test-check-publisher:publish
