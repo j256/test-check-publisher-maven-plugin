@@ -15,7 +15,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
@@ -32,7 +31,7 @@ import com.j256.testcheckpublisher.plugin.gitcontext.GitContextFinder.GitContext
  * 
  * @author graywatson
  */
-@Mojo(name = "publish", defaultPhase = LifecyclePhase.TEST, requiresOnline = true)
+@Mojo(name = "publish", requiresOnline = true)
 public class TestCheckPubMojo extends AbstractMojo {
 
 	private static final String DEFAULT_SERVER_URL = "https://testcheckpublisher.256stuff.com/";

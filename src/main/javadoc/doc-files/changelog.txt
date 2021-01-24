@@ -1,2 +1,5 @@
+0.2: 1/24/2021
+	* Fixed a bug in the plugin mojo annotation.
+
 0.1: 1/23/2021
 	* Initial release which seems to be working.  Only supports surefire and is a bit brittle.
