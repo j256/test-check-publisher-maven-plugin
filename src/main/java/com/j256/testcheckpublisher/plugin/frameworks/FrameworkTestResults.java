@@ -140,6 +140,12 @@ public class FrameworkTestResults {
 			return details;
 		}
 
+		@Override
+		public String toString() {
+			return "TestFileResult [path=" + path + ", line=" + lineNumber + ", level=" + testLevel + ", time="
+					+ timeSeconds + ", test" + testName + ", message=" + message + ", details=" + details + "]";
+		}
+
 		/**
 		 * Level of the file-test result.
 		 */
