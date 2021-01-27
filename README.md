@@ -15,9 +15,12 @@ the following to your pom.xml file:
 				<groupId>com.j256.testcheckpublisher</groupId>
 				<artifactId>test-check-publisher-maven-plugin</artifactId>
 				<!-- check for a later version -->
-				<version>0.1</version>
+				<version>0.6</version>
 			</plugin>
 
 After you have run your unit tests, you need to execute:
 
 	mvn test-check-publisher:publish
+
+For the full instructions about how to get this working, see the
+[Test Check Publisher Github application](https://github.com/apps/test-check-publisher).
