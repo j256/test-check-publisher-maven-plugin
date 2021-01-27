@@ -42,7 +42,7 @@ public class TestCheckPubMojo extends AbstractMojo {
 	/** ultimate limit to the number of check results we post */
 	private static final int ULTIMATE_MAX_NUM_RESULTS = 500;
 	private static final String DEFAULT_SECRET_VALUE =
-			"None.  This setting should probably not be used for security reasons.  Use the secretEnvName instead.";
+			"This setting should probably not be used for security reasons.  Use the secretEnvName instead.";
 
 	@Parameter(defaultValue = DEFAULT_SERVER_URL)
 	private String serverUrl;
@@ -58,7 +58,7 @@ public class TestCheckPubMojo extends AbstractMojo {
 	private String secretValue;
 	@Parameter(defaultValue = "SUREFIRE")
 	private FrameworkCheckGeneratorFactory framework;
-	@Parameter(defaultValue = "GIT_COMMAND")
+	@Parameter
 	private GitContextFinderType context;
 	@Parameter
 	private File testReportDir;
@@ -152,7 +152,10 @@ public class TestCheckPubMojo extends AbstractMojo {
 			}
 		}
 		GitContext gitContext = findGitContext(contextFinderType, log);
-		log.debug("Git context finder " + context + ": " + gitContext);
+		if (gitContext == null) {
+			log.error("Unable to determine git context");
+			System.exit(1);
+		}
 
 		FrameworkCheckGenerator frameworkGenerator = framework.create(log);
 
@@ -188,6 +191,7 @@ public class TestCheckPubMojo extends AbstractMojo {
 	private GitContext findGitContext(GitContextFinderType finderType, Log log) {
 		GitContext gitContext = finderType.findContext(log);
 		if (gitContext != null) {
+			log.debug("Git context finder " + finderType + ": " + gitContext);
 			return gitContext;
 		}
 		GitContextFinderType defaultType = GitContextFinderType.getDefault();
@@ -196,10 +200,11 @@ public class TestCheckPubMojo extends AbstractMojo {
 		}
 		gitContext = defaultType.findContext(log);
 		if (gitContext == null) {
-			log.error("Could not determine git state using context: " + defaultType);
-			System.exit(1);
+			return null;
+		} else {
+			log.debug("Git context finder " + defaultType + ": " + gitContext);
+			return gitContext;
 		}
-		return gitContext;
 	}
 
 	private void postResults(Log log, FrameworkTestResults frameworkResults, PublishedTestResults results)

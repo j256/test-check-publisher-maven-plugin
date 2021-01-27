@@ -1,5 +1,7 @@
 0.6: 1/27/2012
 	* Added format string specifier for supporting different github output in the future.
+	* Better handling of framework and context-finder.
+	* Added TravisCI support.
 
 0.5: 1/27/2012
 	* Added ordering of file results so errors and failures show up first.
