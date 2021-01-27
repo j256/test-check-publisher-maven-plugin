@@ -20,12 +20,12 @@ import org.apache.maven.plugins.annotations.Parameter;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.j256.testcheckpublisher.plugin.frameworks.FrameworkCheckGenerator;
+import com.j256.testcheckpublisher.plugin.frameworks.FrameworkCheckGeneratorFactory;
 import com.j256.testcheckpublisher.plugin.frameworks.FrameworkTestResults;
 import com.j256.testcheckpublisher.plugin.frameworks.FrameworkTestResults.TestFileResult;
-import com.j256.testcheckpublisher.plugin.frameworks.SurefireFrameworkCheckGenerator;
-import com.j256.testcheckpublisher.plugin.gitcontext.CircleCiGitContextFinder;
-import com.j256.testcheckpublisher.plugin.gitcontext.CommandLineGitContextFinder;
 import com.j256.testcheckpublisher.plugin.gitcontext.GitContextFinder.GitContext;
+import com.j256.testcheckpublisher.plugin.gitcontext.GitContextFinderType;
 
 /**
  * Maven plugin that posts the check results to the server.
@@ -37,11 +37,12 @@ public class TestCheckPubMojo extends AbstractMojo {
 
 	private static final String DEFAULT_SERVER_URL = "https://testcheckpublisher.256stuff.com/";
 	public static final String DEFAULT_SECRET_ENV_NAME = "TEST_CHECK_PUBLISHER_SECRET";
-	public static final int MAX_NUM_RESULTS = 50;
-	public static final String MAX_NUM_RESULTS_STR = "50";
-	public static final int ULTIMATE_MAX_NUM_RESULTS = 500;
-	public static final String DEFAULT_SECRET_VALUE =
-			"None.  This should probably not be used for security reasons.  Use the secretEnvName instead.";
+	private static final int MAX_NUM_RESULTS = 50;
+	private static final String MAX_NUM_RESULTS_STR = "50";
+	/** ultimate limit to the number of check results we post */
+	private static final int ULTIMATE_MAX_NUM_RESULTS = 500;
+	private static final String DEFAULT_SECRET_VALUE =
+			"None.  This setting should probably not be used for security reasons.  Use the secretEnvName instead.";
 
 	@Parameter(defaultValue = DEFAULT_SERVER_URL)
 	private String serverUrl;
@@ -56,13 +57,14 @@ public class TestCheckPubMojo extends AbstractMojo {
 	@Parameter(defaultValue = DEFAULT_SECRET_VALUE)
 	private String secretValue;
 	@Parameter(defaultValue = "SUREFIRE")
-	private Framework framework;
+	private FrameworkCheckGeneratorFactory framework;
 	@Parameter(defaultValue = "GIT_COMMAND")
-	private ContextFinder context;
+	private GitContextFinderType context;
 	@Parameter
 	private File testReportDir;
 	@Parameter
 	private File sourceDir;
+	/** verbose log output when mvn -X is used */
 	@Parameter
 	private boolean verbose;
 	/**
@@ -84,10 +86,7 @@ public class TestCheckPubMojo extends AbstractMojo {
 			maxNumResults = MAX_NUM_RESULTS;
 		}
 		if (framework == null) {
-			framework = Framework.SUREFIRE;
-		}
-		if (context == null) {
-			context = ContextFinder.GIT_COMMAND;
+			framework = FrameworkCheckGeneratorFactory.SUREFIRE;
 		}
 
 		Log log = getLog();
@@ -115,11 +114,11 @@ public class TestCheckPubMojo extends AbstractMojo {
 		this.secretValue = secretValue;
 	}
 
-	public void setFramework(Framework framework) {
+	public void setFramework(FrameworkCheckGeneratorFactory framework) {
 		this.framework = framework;
 	}
 
-	public void setContext(ContextFinder context) {
+	public void setContext(GitContextFinderType context) {
 		this.context = context;
 	}
 
@@ -143,38 +142,33 @@ public class TestCheckPubMojo extends AbstractMojo {
 			}
 		}
 
-		// find the git-context of the local directory structure
-		GitContext gitContext;
-		switch (context) {
-			case CIRCLE_CI:
-				gitContext = new CircleCiGitContextFinder().findContext();
-				break;
-			case GIT_COMMAND:
-			default:
-				gitContext = new CommandLineGitContextFinder().findContext();
-				break;
+		GitContextFinderType contextFinderType = context;
+		if (contextFinderType == null) {
+			for (GitContextFinderType type : GitContextFinderType.values()) {
+				if (type.isRunning()) {
+					contextFinderType = type;
+					break;
+				}
+			}
 		}
-		if (gitContext == null) {
-			log.error("Could not determine git state using context: " + context);
-			System.exit(1);
-		}
+		GitContext gitContext = findGitContext(contextFinderType, log);
 		log.debug("Git context finder " + context + ": " + gitContext);
 
-		SurefireFrameworkCheckGenerator frameworkGenerator;
-		switch (framework) {
-			case SUREFIRE:
-			default:
-				frameworkGenerator = new SurefireFrameworkCheckGenerator();
-				break;
-		}
+		FrameworkCheckGenerator frameworkGenerator = framework.create(log);
 
 		if (maxNumResults > ULTIMATE_MAX_NUM_RESULTS) {
 			maxNumResults = ULTIMATE_MAX_NUM_RESULTS;
 		}
 		FrameworkTestResults frameworkResults = new FrameworkTestResults();
 		log.debug("Loading tests results from framework generator " + framework);
-		frameworkGenerator.loadTestResults(frameworkResults, testReportDir, sourceDir, log);
+		try {
+			frameworkGenerator.loadTestResults(frameworkResults, testReportDir, sourceDir, log);
+		} catch (Exception e) {
+			log.error("Problems loading test results with framework: " + framework, e);
+			System.exit(1);
+		}
 		if (format != null) {
+			// set our format string
 			frameworkResults.setFormat(format);
 		}
 		frameworkResults.limitFileResults(maxNumResults);
@@ -189,6 +183,23 @@ public class TestCheckPubMojo extends AbstractMojo {
 
 		log.debug("Posting results to server..." + frameworkResults);
 		postResults(log, frameworkResults, results);
+	}
+
+	private GitContext findGitContext(GitContextFinderType finderType, Log log) {
+		GitContext gitContext = finderType.findContext(log);
+		if (gitContext != null) {
+			return gitContext;
+		}
+		GitContextFinderType defaultType = GitContextFinderType.getDefault();
+		if (finderType == defaultType) {
+			return null;
+		}
+		gitContext = defaultType.findContext(log);
+		if (gitContext == null) {
+			log.error("Could not determine git state using context: " + defaultType);
+			System.exit(1);
+		}
+		return gitContext;
 	}
 
 	private void postResults(Log log, FrameworkTestResults frameworkResults, PublishedTestResults results)
@@ -220,24 +231,5 @@ public class TestCheckPubMojo extends AbstractMojo {
 				log.error("Test results were: " + frameworkResults.asString());
 			}
 		}
-	}
-
-	/**
-	 * Types of generators that we support.
-	 */
-	public static enum Framework {
-		SUREFIRE,
-		// end
-		;
-	}
-
-	/**
-	 * Types of generators that we support.
-	 */
-	public static enum ContextFinder {
-		CIRCLE_CI,
-		GIT_COMMAND,
-		// end
-		;
 	}
 }

@@ -19,6 +19,7 @@ public class CommandLineGitContextFinder implements GitContextFinder {
 
 	@Override
 	public boolean isRunning() {
+		// always available
 		return true;
 	}
 
