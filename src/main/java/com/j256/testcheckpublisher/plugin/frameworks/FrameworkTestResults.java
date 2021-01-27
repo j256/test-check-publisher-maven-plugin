@@ -43,9 +43,11 @@ public class FrameworkTestResults {
 	 */
 	public void limitFileResults(int maxNumResults) {
 		// sort and remove results above our limit
-		Collections.sort(fileResults);
-		for (int i = fileResults.size() - 1; i >= maxNumResults; i--) {
-			fileResults.remove(fileResults.size() - 1);
+		if (fileResults != null) {
+			Collections.sort(fileResults);
+			for (int i = fileResults.size() - 1; i >= maxNumResults; i--) {
+				fileResults.remove(fileResults.size() - 1);
+			}
 		}
 	}
 
