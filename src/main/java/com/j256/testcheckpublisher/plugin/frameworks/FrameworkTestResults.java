@@ -2,6 +2,8 @@ package com.j256.testcheckpublisher.plugin.frameworks;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Results from the test framework.
@@ -14,12 +16,7 @@ public class FrameworkTestResults {
 	private int numTests;
 	private int numFailures;
 	private int numErrors;
-	private Collection<TestFileResult> fileResults;
-	private final transient int maxNumResults;
-
-	public FrameworkTestResults(int maxNumResults) {
-		this.maxNumResults = maxNumResults;
-	}
+	private List<TestFileResult> fileResults;
 
 	public String getName() {
 		return name;
@@ -41,6 +38,17 @@ public class FrameworkTestResults {
 		return numErrors;
 	}
 
+	/**
+	 * Sort the results and remove any low level results above the max argument.
+	 */
+	public void limitFileResults(int maxNumResults) {
+		// sort and remove results above our limit
+		Collections.sort(fileResults);
+		for (int i = fileResults.size() - 1; i >= maxNumResults; i--) {
+			fileResults.remove(fileResults.size() - 1);
+		}
+	}
+
 	public Collection<TestFileResult> getFileResults() {
 		return fileResults;
 	}
@@ -55,9 +63,7 @@ public class FrameworkTestResults {
 		if (this.fileResults == null) {
 			this.fileResults = new ArrayList<>();
 		}
-		if (this.fileResults.size() < maxNumResults) {
-			this.fileResults.add(result);
-		}
+		this.fileResults.add(result);
 	}
 
 	/**
@@ -91,7 +97,7 @@ public class FrameworkTestResults {
 	/**
 	 * File result associated with a specific test.
 	 */
-	public static class TestFileResult {
+	public static class TestFileResult implements Comparable<TestFileResult> {
 
 		private final String path;
 		private final int lineNumber;
@@ -141,6 +147,17 @@ public class FrameworkTestResults {
 		}
 
 		@Override
+		public int compareTo(TestFileResult other) {
+			// we want higher levels to come first
+			int result = other.testLevel.compareValue(testLevel);
+			if (result != 0) {
+				return result;
+			} else {
+				return path.compareTo(other.path);
+			}
+		}
+
+		@Override
 		public String toString() {
 			return "TestFileResult [path=" + path + ", line=" + lineNumber + ", level=" + testLevel + ", time="
 					+ timeSeconds + ", test" + testName + ", message=" + message + ", details=" + details + "]";
@@ -150,11 +167,21 @@ public class FrameworkTestResults {
 		 * Level of the file-test result.
 		 */
 		public static enum TestLevel {
-			NOTICE,
-			FAILURE,
-			ERROR,
+			NOTICE(1),
+			FAILURE(2),
+			ERROR(3),
 			// end
 			;
+
+			private final int value;
+
+			private TestLevel(int value) {
+				this.value = value;
+			}
+
+			public int compareValue(TestLevel other) {
+				return value - other.value;
+			}
 
 			@Override
 			public String toString() {

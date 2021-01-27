@@ -7,8 +7,9 @@ public class SurefireFrameworkCheckGeneratorTest {
 
 	@Test
 	public void testStuff() {
-		FrameworkTestResults results = new FrameworkTestResults(100);
+		FrameworkTestResults results = new FrameworkTestResults();
 		SurefireFrameworkCheckGenerator generator = new SurefireFrameworkCheckGenerator();
 		generator.loadTestResults(results, null, null, new SystemStreamLog());
+		results.limitFileResults(100);
 	}
 }

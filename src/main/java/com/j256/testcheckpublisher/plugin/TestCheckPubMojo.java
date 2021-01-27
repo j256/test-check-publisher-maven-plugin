@@ -21,6 +21,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.j256.testcheckpublisher.plugin.frameworks.FrameworkTestResults;
+import com.j256.testcheckpublisher.plugin.frameworks.FrameworkTestResults.TestFileResult;
 import com.j256.testcheckpublisher.plugin.frameworks.SurefireFrameworkCheckGenerator;
 import com.j256.testcheckpublisher.plugin.gitcontext.CircleCiGitContextFinder;
 import com.j256.testcheckpublisher.plugin.gitcontext.CommandLineGitContextFinder;
@@ -62,6 +63,8 @@ public class TestCheckPubMojo extends AbstractMojo {
 	private File testReportDir;
 	@Parameter
 	private File sourceDir;
+	@Parameter
+	private boolean verbose;
 
 	@Override
 	public void execute() throws MojoExecutionException {
@@ -163,14 +166,20 @@ public class TestCheckPubMojo extends AbstractMojo {
 		if (maxNumResults > ULTIMATE_MAX_NUM_RESULTS) {
 			maxNumResults = ULTIMATE_MAX_NUM_RESULTS;
 		}
-		FrameworkTestResults frameworkResults = new FrameworkTestResults(maxNumResults);
+		FrameworkTestResults frameworkResults = new FrameworkTestResults();
 		log.debug("Loading tests results from framework generator " + framework);
 		frameworkGenerator.loadTestResults(frameworkResults, testReportDir, sourceDir, log);
+		frameworkResults.limitFileResults(maxNumResults);
+		if (verbose) {
+			for (TestFileResult result : frameworkResults.getFileResults()) {
+				log.debug("result: " + result);
+			}
+		}
 
 		PublishedTestResults results = new PublishedTestResults(gitContext.getOwner(), gitContext.getRepository(),
 				gitContext.getCommitSha(), secret, frameworkResults);
 
-		log.debug("Posting results to server...");
+		log.debug("Posting results to server..." + frameworkResults);
 		postResults(log, frameworkResults, results);
 	}
 
