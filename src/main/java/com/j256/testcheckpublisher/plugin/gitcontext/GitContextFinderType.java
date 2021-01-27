@@ -9,6 +9,7 @@ import com.j256.testcheckpublisher.plugin.gitcontext.GitContextFinder.GitContext
  */
 public enum GitContextFinderType {
 	CIRCLE_CI(new CircleCiGitContextFinder()),
+	TRAVIS_CI(new TravisCiGitContextFinder()),
 	// this should be at the end because it is always available
 	GIT_COMMAND(new CommandLineGitContextFinder()),
 	// end
