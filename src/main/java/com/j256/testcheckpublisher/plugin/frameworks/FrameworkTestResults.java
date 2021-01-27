@@ -17,6 +17,7 @@ public class FrameworkTestResults {
 	private int numFailures;
 	private int numErrors;
 	private List<TestFileResult> fileResults;
+	private String format;
 
 	public String getName() {
 		return name;
@@ -24,6 +25,14 @@ public class FrameworkTestResults {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getFormat() {
+		return format;
+	}
+
+	public void setFormat(String format) {
+		this.format = format;
 	}
 
 	public int getNumTests() {

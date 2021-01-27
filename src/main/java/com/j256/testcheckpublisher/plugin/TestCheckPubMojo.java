@@ -65,6 +65,11 @@ public class TestCheckPubMojo extends AbstractMojo {
 	private File sourceDir;
 	@Parameter
 	private boolean verbose;
+	/**
+	 * Format of the results on github. Not used currently.
+	 */
+	@Parameter
+	private String format;
 
 	@Override
 	public void execute() throws MojoExecutionException {
@@ -169,6 +174,9 @@ public class TestCheckPubMojo extends AbstractMojo {
 		FrameworkTestResults frameworkResults = new FrameworkTestResults();
 		log.debug("Loading tests results from framework generator " + framework);
 		frameworkGenerator.loadTestResults(frameworkResults, testReportDir, sourceDir, log);
+		if (format != null) {
+			frameworkResults.setFormat(format);
+		}
 		frameworkResults.limitFileResults(maxNumResults);
 		if (verbose) {
 			for (TestFileResult result : frameworkResults.getFileResults()) {
