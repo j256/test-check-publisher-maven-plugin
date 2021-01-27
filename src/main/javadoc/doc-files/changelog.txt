@@ -1,3 +1,6 @@
+0.4: 1/26/2012
+	* Trying to get the plugin-help.xml to publish correctly.
+
 0.3: 1/24/2012
 	* Added method finding, renamed config options, improved logging.
 
