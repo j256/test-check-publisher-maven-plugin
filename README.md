@@ -27,7 +27,8 @@ After you have run your unit tests, you need to execute:
 # Extensions
 
 Right now the plugin is pretty limited to Java/surefire results but it has been built to be more generic.  If you
-have a testing framework that you'd like it to support, please add an issue.
+have a testing framework that you'd like it to support, please
+[add an issue](https://github.com/j256/test-check-publisher-maven-plugin/issues).
 
 # Screenshots
 
