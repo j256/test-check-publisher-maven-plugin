@@ -1,15 +1,18 @@
-0.6: 1/27/2012
+0.7: 2/1/2021
+	* Changed the path on the server to POST to.
+
+0.6: 1/27/2021
 	* Added format string specifier for supporting different github output in the future.
 	* Better handling of framework and context-finder.
 	* Added TravisCI support.
 
-0.5: 1/27/2012
+0.5: 1/27/2021
 	* Added ordering of file results so errors and failures show up first.
 
-0.4: 1/26/2012
+0.4: 1/26/2021
 	* Trying to get the plugin-help.xml to publish correctly.
 
-0.3: 1/24/2012
+0.3: 1/24/2021
 	* Added method finding, renamed config options, improved logging.
 
 0.2: 1/24/2021

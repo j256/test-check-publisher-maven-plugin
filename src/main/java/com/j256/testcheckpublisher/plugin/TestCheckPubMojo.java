@@ -35,7 +35,7 @@ import com.j256.testcheckpublisher.plugin.gitcontext.GitContextFinderType;
 @Mojo(name = "publish", requiresOnline = true)
 public class TestCheckPubMojo extends AbstractMojo {
 
-	private static final String DEFAULT_SERVER_URL = "https://testcheckpublisher.256stuff.com/";
+	private static final String DEFAULT_SERVER_URL = "https://testcheckpublisher.256stuff.com/results";
 	public static final String DEFAULT_SECRET_ENV_NAME = "TEST_CHECK_PUBLISHER_SECRET";
 	private static final int MAX_NUM_RESULTS = 50;
 	private static final String MAX_NUM_RESULTS_STR = "50";
