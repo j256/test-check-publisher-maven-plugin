@@ -8,9 +8,7 @@ to get this working, see the
 
 * The source code be found on the [git repository](https://github.com/j256/
 test-check-publisher-maven-plugin).
-* Maven packages are published via [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.j256.
-testcheckpublisher/
-test-check-publisher-maven-plugin/badge.svg?style=flat-square)](https://maven-badges.herokuapp.com/maven-central/com.j256.testcheckpublisher/test-check-publisher-maven-plugin/)
+* Maven packages are published via [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.j256.testcheckpublisher/test-check-publisher-maven-plugin/badge.svg?style=flat-square)](https://maven-badges.herokuapp.com/maven-central/com.j256.testcheckpublisher/test-check-publisher-maven-plugin/)
 
 You need to add the test-check-publisher integration to your repository and then add something like
 the following to your pom.xml file:
