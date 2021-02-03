@@ -115,7 +115,8 @@ public class FrameworkTestResults {
 	@Override
 	public String toString() {
 		return "FrameworkTestResults [name=" + name + ", numTests=" + numTests + ", numFailures=" + numFailures
-				+ ", numErrors=" + numErrors + ", numFileResults=" + fileResults.size() + "]";
+				+ ", numErrors=" + numErrors + ", numFileResults=" + (fileResults == null ? 0 : fileResults.size())
+				+ "]";
 	}
 
 	/**
