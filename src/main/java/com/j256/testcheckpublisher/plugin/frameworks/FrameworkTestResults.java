@@ -19,6 +19,19 @@ public class FrameworkTestResults {
 	private List<TestFileResult> fileResults;
 	private String format;
 
+	public FrameworkTestResults() {
+	}
+
+	public FrameworkTestResults(String name, int numTests, int numFailures, int numErrors,
+			List<TestFileResult> fileResults, String format) {
+		this.name = name;
+		this.numTests = numTests;
+		this.numFailures = numFailures;
+		this.numErrors = numErrors;
+		this.fileResults = fileResults;
+		this.format = format;
+	}
+
 	public String getName() {
 		return name;
 	}
@@ -166,6 +179,65 @@ public class FrameworkTestResults {
 			} else {
 				return path.compareTo(other.path);
 			}
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = prime + ((details == null) ? 0 : details.hashCode());
+			result = prime * result + lineNumber;
+			result = prime * result + ((message == null) ? 0 : message.hashCode());
+			result = prime * result + ((path == null) ? 0 : path.hashCode());
+			result = prime * result + ((testLevel == null) ? 0 : testLevel.hashCode());
+			result = prime * result + ((testName == null) ? 0 : testName.hashCode());
+			result = prime * result + Float.floatToIntBits(timeSeconds);
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (obj == null || getClass() != obj.getClass()) {
+				return false;
+			}
+			TestFileResult other = (TestFileResult) obj;
+			if (details == null) {
+				if (other.details != null) {
+					return false;
+				}
+			} else if (!details.equals(other.details)) {
+				return false;
+			}
+			if (lineNumber != other.lineNumber) {
+				return false;
+			}
+			if (message == null) {
+				if (other.message != null) {
+					return false;
+				}
+			} else if (!message.equals(other.message)) {
+				return false;
+			}
+			if (path == null) {
+				if (other.path != null) {
+					return false;
+				}
+			} else if (!path.equals(other.path)) {
+				return false;
+			}
+			if (testLevel != other.testLevel) {
+				return false;
+			}
+			if (testName == null) {
+				if (other.testName != null) {
+					return false;
+				}
+			} else if (!testName.equals(other.testName)) {
+				return false;
+			}
+			if (Float.floatToIntBits(timeSeconds) != Float.floatToIntBits(other.timeSeconds)) {
+				return false;
+			}
+			return true;
 		}
 
 		@Override
