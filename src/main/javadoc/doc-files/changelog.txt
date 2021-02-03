@@ -1,6 +1,8 @@
-0.7: 2/2/2021
+0.8: 2/2/2021
 	* Fixed a stupid NPE in FrameworkTestResults toString().  Sigh.
-	* Changed the path on the server to POST to.
+
+0.7: 2/1/2021
+		* Changed the path on the server to POST to.
 
 0.6: 1/27/2021
 	* Added format string specifier for supporting different github output in the future.
