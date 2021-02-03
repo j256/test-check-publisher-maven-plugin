@@ -1,5 +1,5 @@
-Test Check Publisher
-====================
+Test Check Publisher Maven Plugin
+=================================
 
 This maven plugin is designed to take tests results produced by continuous integration and publish
 them to github as a "check" annotation on a particular commit.  For the full instructions about how
