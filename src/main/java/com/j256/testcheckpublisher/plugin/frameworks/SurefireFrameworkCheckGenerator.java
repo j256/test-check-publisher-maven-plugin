@@ -4,9 +4,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.Reader;
-import java.io.StringWriter;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -38,7 +37,7 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 	private final boolean SHOW_NOTICE = true;
 	private final int DEFAULT_LINE_NUMBER = 1;
 	// try to limit the amount of IO
-	private final int MAX_LINES_READ = 1000;
+	private final int MAX_LINES_READ = 5000;
 
 	@Override
 	public void loadTestResults(FrameworkTestResults testResults, File testReportDir, File sourceDir, Log log) {
@@ -48,11 +47,12 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 			return;
 		}
 		sourceDir = checkDir("Source", sourceDir, ".", log);
+		Map<String, File> fileNameMap;
 		if (sourceDir == null) {
-			return;
+			fileNameMap = Collections.emptyMap();
+		} else {
+			fileNameMap = getFileNameMap(sourceDir);
 		}
-
-		Map<String, File> fileNameMap = getFileNameMap(sourceDir);
 
 		testResults.setName("Surefire test results");
 
@@ -63,19 +63,22 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 		}
 		for (File file : files) {
 			Matcher matcher = XML_PATTERN.matcher(file.getName());
-			if (matcher.matches()) {
-				String className = matcher.group(1);
-				String fileName = matcher.group(2) + ".java";
-				String path = classToPath(className);
-				try {
-					addTestSuite(testResults, file, className, path, fileName, fileNameMap.get(fileName), log);
-				} catch (Exception e) {
-					StringWriter writer = new StringWriter();
-					e.printStackTrace(new PrintWriter(writer));
-					log.error("Could not parse surefire XML file: " + e);
-					log.debug(e);
-				}
+			if (!matcher.matches()) {
+				continue;
 			}
+			String className = matcher.group(1);
+			String fileName = matcher.group(2) + ".java";
+			String path = className.replace('.', '/');
+			SurefireTestSuite suite;
+			try {
+				try (Reader reader = new FileReader(file)) {
+					suite = xmlMapper.readValue(reader, SurefireTestSuite.class);
+				}
+			} catch (Exception e) {
+				log.error("Could not parse surefire XML file: " + file, e);
+				continue;
+			}
+			addTestSuite(testResults, suite, className, path, fileName, fileNameMap.get(fileName), log);
 		}
 		log.debug("Added results: " + testResults);
 	}
@@ -115,49 +118,52 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 		return fileNameMap;
 	}
 
-	private void addTestSuite(FrameworkTestResults testResults, File file, String className, String path,
-			String fileName, File sourceFile, Log log) throws Exception {
+	private void addTestSuite(FrameworkTestResults testResults, SurefireTestSuite suite, String className, String path,
+			String fileName, File sourceFile, Log log) {
 
 		int lineNumber;
-		try (Reader reader = new FileReader(file)) {
-			SurefireTestSuite suite = xmlMapper.readValue(reader, SurefireTestSuite.class);
-			testResults.addCounts(suite.getNumTests(), suite.getNumFailures(), suite.getNumErrors());
+		testResults.addCounts(suite.getNumTests(), suite.getNumFailures(), suite.getNumErrors());
 
-			for (TestCase test : suite.getTestcases()) {
+		MutableInteger sourceFileMissingCounter = new MutableInteger();
+		MutableInteger tooLongCounter = new MutableInteger();
+		for (TestCase test : suite.getTestcases()) {
 
-				Problem failure = test.getFailure();
-				Problem error = test.getError();
+			Problem failure = test.getFailure();
+			Problem error = test.getError();
 
-				TestLevel level;
-				Problem problem;
-				if (failure != null) {
-					problem = failure;
-					level = TestLevel.FAILURE;
-				} else if (error != null) {
-					problem = error;
-					level = TestLevel.ERROR;
-				} else {
-					if (SHOW_NOTICE) {
-						lineNumber = findMethodLineNumber(fileName, test.getName(), sourceFile, log);
-						testResults.addFileResult(new TestFileResult(path, lineNumber, TestLevel.NOTICE,
-								test.timeSeconds, className + "." + test.getName(), "succeeded, no errors", null));
-					}
-					continue;
+			TestLevel level;
+			Problem problem;
+			if (failure != null) {
+				problem = failure;
+				level = TestLevel.FAILURE;
+			} else if (error != null) {
+				problem = error;
+				level = TestLevel.ERROR;
+			} else {
+				if (SHOW_NOTICE) {
+					lineNumber = findMethodLineNumber(fileName, test.getName(), sourceFile, tooLongCounter,
+							sourceFileMissingCounter, log);
+					testResults.addFileResult(new TestFileResult(path, lineNumber, TestLevel.NOTICE, test.timeSeconds,
+							className + "." + test.getName(), "succeeded, no errors", null));
 				}
-
-				// look to find if we have file:line format
-				lineNumber = findErrorLineNumber(className, problem.body);
-				if (lineNumber == DEFAULT_LINE_NUMBER) {
-					lineNumber = findMethodLineNumber(fileName, test.getName(), sourceFile, log);
-				}
-				testResults.addFileResult(new TestFileResult(path, lineNumber, level, test.timeSeconds,
-						className + "." + test.getName(), problem.type + ": " + problem.message, problem.body));
+				continue;
 			}
-		}
-	}
 
-	private String classToPath(String className) {
-		return className.replace('.', '/');
+			// look to find if we have file:line format
+			lineNumber = findErrorLineNumber(className, problem.body);
+			if (lineNumber == DEFAULT_LINE_NUMBER) {
+				lineNumber = findMethodLineNumber(fileName, test.getName(), sourceFile, tooLongCounter,
+						sourceFileMissingCounter, log);
+			}
+			testResults.addFileResult(new TestFileResult(path, lineNumber, level, test.timeSeconds,
+					className + "." + test.getName(), problem.type + ": " + problem.message, problem.body));
+		}
+
+		// print a message if the source file is too long and we didn't match some methods
+		if (tooLongCounter.count > 0) {
+			log.debug("Stopped looking for " + tooLongCounter.count + " methods after processing " + MAX_LINES_READ
+					+ " lines from " + sourceFile);
+		}
 	}
 
 	private int findErrorLineNumber(String className, String body) {
@@ -198,10 +204,27 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 		}
 	}
 
-	private int findMethodLineNumber(String fileName, String methodName, File sourceFile, Log log) {
+	private int findMethodLineNumber(String fileName, String methodName, File sourceFile, MutableInteger tooLongCounter,
+			MutableInteger sourceFileMissingCounter, Log log) {
+
 		if (sourceFile == null) {
-			log.debug("Unknown test source-file name: " + fileName);
+			if (sourceFileMissingCounter.count == 0) {
+				log.debug("Unknown test source-file name: " + fileName);
+				sourceFileMissingCounter.count = 1;
+			}
 			return DEFAULT_LINE_NUMBER;
+		}
+		if (!sourceFile.isFile()) {
+			if (sourceFileMissingCounter.count == 0) {
+				log.debug("Source-file is not a file: " + sourceFile);
+				sourceFileMissingCounter.count = 1;
+			}
+		}
+		if (!sourceFile.canRead()) {
+			if (sourceFileMissingCounter.count == 0) {
+				log.debug("Source-file is not readable: " + sourceFile);
+				sourceFileMissingCounter.count = 1;
+			}
 		}
 
 		// this looks for the method name but not if there is a * in the prefix which may mean comment
@@ -220,15 +243,18 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 						return lineNumber;
 					}
 					if (lineNumber > MAX_LINES_READ) {
-						log.debug("Stopped looking for method " + methodName + " after processing " + MAX_LINES_READ
-								+ " from " + sourceFile);
+						tooLongCounter.count++;
 						return DEFAULT_LINE_NUMBER;
 					}
 				}
 			}
 		} catch (IOException ioe) {
-			log.error("Could not read source-file " + sourceFile + " to find method: " + methodName);
+			log.error("Could not read source-file " + sourceFile + " to find method: " + methodName, ioe);
 			return DEFAULT_LINE_NUMBER;
 		}
+	}
+
+	private static class MutableInteger {
+		int count;
 	}
 }
