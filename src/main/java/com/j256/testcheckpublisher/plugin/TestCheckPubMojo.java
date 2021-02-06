@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.StringWriter;
 
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -90,7 +89,7 @@ public class TestCheckPubMojo extends AbstractMojo {
 		}
 
 		Log log = getLog();
-		log.info("Publishing test information to server...");
+		log.info("Posting test-check-publisher plugin results to server...");
 		try {
 			publish(log);
 		} catch (IOException ioe) {
@@ -184,8 +183,10 @@ public class TestCheckPubMojo extends AbstractMojo {
 		PublishedTestResults results = new PublishedTestResults(gitContext.getOwner(), gitContext.getRepository(),
 				gitContext.getCommitSha(), secret, frameworkResults);
 
-		log.debug("Posting results to server..." + frameworkResults);
+		log.debug("Posting test-check-publisher plugin results to server..." + frameworkResults.asString());
+		long before = System.currentTimeMillis();
 		postResults(log, frameworkResults, results);
+		log.debug("Posting took " + (System.currentTimeMillis() - before) + " ms");
 	}
 
 	private GitContext findGitContext(GitContextFinderType finderType, Log log) {
@@ -219,11 +220,10 @@ public class TestCheckPubMojo extends AbstractMojo {
 		try (CloseableHttpResponse response = httpclient.execute(post);
 				BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
 			if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-				log.info("Checks have been posted: " + frameworkResults.asString());
+				log.info("Posted test-check-publisher plugin results to server: " + frameworkResults.asString());
 			} else {
-				log.error("Check posting failed: " + response.getStatusLine());
+				log.error("Posting test-check-publisher plugin results has failed: " + response.getStatusLine());
 				// log the resulting message from the server
-				StringWriter writer = new StringWriter();
 				while (true) {
 					String line = reader.readLine();
 					if (line == null) {
@@ -232,7 +232,6 @@ public class TestCheckPubMojo extends AbstractMojo {
 						log.error("Server response: " + line);
 					}
 				}
-				log.error(writer.toString());
 				log.error("Test results were: " + frameworkResults.asString());
 			}
 		}
