@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,8 +15,11 @@ import java.util.regex.Pattern;
  */
 public class CommandLineGitContextFinder implements GitContextFinder {
 
-	private static final Pattern REMOTE_ORGIN_URL_PATTERN = Pattern.compile(".*:([^/]+)/(.+)\\.git");
+	// git@github.com:j256/test-check-publisher-maven-plugin.git
+	// ssh://git@github.com/j256/test-check-publisher-maven-plugin.git
+	private static final Pattern REMOTE_ORGIN_URL_PATTERN = Pattern.compile("(.*:|.*://[^/]+/)([^/]+)/(.+).git");
 	private static final Pattern LOG_PATTERN = Pattern.compile("commit ([^ ]+) ?.*");
+	private Queue<String> testFirstLines;
 
 	@Override
 	public boolean isRunning() {
@@ -39,8 +43,8 @@ public class CommandLineGitContextFinder implements GitContextFinder {
 			return null;
 		}
 
-		String owner = matcher.group(1);
-		String repository = matcher.group(2);
+		String owner = matcher.group(2);
+		String repository = matcher.group(3);
 
 		// git log -1 gives the sha
 		command = new String[] { "git", "log", "-1" };
@@ -59,7 +63,17 @@ public class CommandLineGitContextFinder implements GitContextFinder {
 		return new GitContext(owner, repository, commitSha);
 	}
 
-	private static String getFirstLineOfCommand(String[] command) {
+	/**
+	 * For testing purposes.
+	 */
+	public void setTestFirstLines(Queue<String> testFirstLines) {
+		this.testFirstLines = testFirstLines;
+	}
+
+	private String getFirstLineOfCommand(String[] command) {
+		if (testFirstLines != null) {
+			return testFirstLines.poll();
+		}
 		Process process = null;
 		try {
 			process = Runtime.getRuntime().exec(command);
