@@ -1,4 +1,4 @@
-0.10: 2/8/2021
+1.1: 2/9/2021
 	* Pulled TestFileResult out to it's own class.
 	* Added pretty string to the test-level for better display output.
 	* Refactor to improve the test coverage.  Added a ResultPoster interface to better mock it.
