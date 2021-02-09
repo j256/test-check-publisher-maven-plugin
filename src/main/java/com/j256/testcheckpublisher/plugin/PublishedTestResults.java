@@ -52,6 +52,14 @@ public class PublishedTestResults {
 		return secret;
 	}
 
+	public String asString() {
+		if (results == null) {
+			return "no framework results";
+		} else {
+			return results.asString();
+		}
+	}
+
 	public FrameworkTestResults getResults() {
 		return results;
 	}
