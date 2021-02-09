@@ -10,14 +10,14 @@ public class FrameworkTestResultsTest {
 	public void testToString() {
 		System.out.println(new FrameworkTestResults().toString());
 	}
-	
+
 	@Test
 	public void testFail() {
 		fail("Showing a test failure for a test in the commit");
 	}
-	
+
 	@Test
 	public void testDoesntCompile() {
-		This doesn't compile;
+		throw new Error("simulate an error");
 	}
 }
