@@ -6,17 +6,21 @@ package com.j256.testcheckpublisher.plugin.frameworks;
 public class TestFileResult implements Comparable<TestFileResult> {
 
 	private final String path;
-	private final int lineNumber;
+	@Deprecated
+	private int lineNumber;
+	private final int startLineNumber;
+	private final int endLineNumber;
 	private final TestLevel testLevel;
 	private final float timeSeconds;
 	private final String testName;
 	private final String message;
 	private final String details;
 
-	public TestFileResult(String path, int lineNumber, TestLevel testLevel, float timeSeconds, String testName,
-			String message, String details) {
+	public TestFileResult(String path, int startLineNumber, int endLineNumber, TestLevel testLevel, float timeSeconds,
+			String testName, String message, String details) {
 		this.path = path;
-		this.lineNumber = lineNumber;
+		this.startLineNumber = startLineNumber;
+		this.endLineNumber = endLineNumber;
 		this.testLevel = testLevel;
 		this.timeSeconds = timeSeconds;
 		this.testName = testName;
@@ -28,8 +32,27 @@ public class TestFileResult implements Comparable<TestFileResult> {
 		return path;
 	}
 
-	public int getLineNumber() {
-		return lineNumber;
+	public int getStartLineNumber() {
+		if (startLineNumber == 0) {
+			return lineNumber;
+		} else {
+			return startLineNumber;
+		}
+	}
+
+	public int getEndLineNumber() {
+		if (endLineNumber == 0) {
+			return lineNumber;
+		} else {
+			return endLineNumber;
+		}
+	}
+
+	/**
+	 * For testing purposes.
+	 */
+	void setLineNumber(int lineNumber) {
+		this.lineNumber = lineNumber;
 	}
 
 	public TestLevel getTestLevel() {

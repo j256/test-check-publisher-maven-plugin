@@ -1,3 +1,6 @@
+1.2: 2/9/2021
+	* Added start and end line number to the PublishedTestResults for support of non-Java.
+
 1.1: 2/9/2021
 	* Pulled TestFileResult out to it's own class.
 	* Added pretty string to the test-level for better display output.

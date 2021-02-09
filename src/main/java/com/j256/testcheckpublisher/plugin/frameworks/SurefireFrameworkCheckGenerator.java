@@ -151,8 +151,8 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 				if (SHOW_NOTICE) {
 					lineNumber = findMethodLineNumber(fileName, test.getName(), sourceFile, tooLongCounter,
 							sourceFileMissingCounter, log);
-					testResults.addFileResult(new TestFileResult(path, lineNumber, TestLevel.NOTICE, test.timeSeconds,
-							className + "." + test.getName(), "succeeded, no errors", null));
+					testResults.addFileResult(new TestFileResult(path, lineNumber, lineNumber, TestLevel.NOTICE,
+							test.timeSeconds, className + "." + test.getName(), "succeeded, no errors", null));
 				}
 				continue;
 			}
@@ -163,7 +163,7 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 				lineNumber = findMethodLineNumber(fileName, test.getName(), sourceFile, tooLongCounter,
 						sourceFileMissingCounter, log);
 			}
-			testResults.addFileResult(new TestFileResult(path, lineNumber, level, test.timeSeconds,
+			testResults.addFileResult(new TestFileResult(path, lineNumber, lineNumber, level, test.timeSeconds,
 					className + "." + test.getName(), problem.type + ": " + problem.message, problem.body));
 		}
 
