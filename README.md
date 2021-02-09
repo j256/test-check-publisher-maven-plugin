@@ -20,7 +20,7 @@ the following to your pom.xml file:
 				<groupId>com.j256.testcheckpublisher</groupId>
 				<artifactId>test-check-publisher-maven-plugin</artifactId>
 				<!-- check for a later version -->
-				<version>0.6</version>
+				<version>1.1</version>
 			</plugin>
 
 After you have run your unit tests, you need to execute:
