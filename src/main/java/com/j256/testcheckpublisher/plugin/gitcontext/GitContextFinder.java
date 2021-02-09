@@ -13,7 +13,7 @@ public interface GitContextFinder {
 	public boolean isRunning();
 
 	/**
-	 * Return the local git context.
+	 * Return the local git context or null on error.
 	 */
 	public GitContext findContext() throws Exception;
 
