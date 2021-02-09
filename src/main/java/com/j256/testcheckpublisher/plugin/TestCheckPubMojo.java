@@ -63,6 +63,7 @@ public class TestCheckPubMojo extends AbstractMojo {
 	private String format;
 
 	private ResultPoster resultPoster;
+	private boolean throwOnError;
 
 	@Override
 	public void execute() throws MojoExecutionException {
@@ -121,8 +122,18 @@ public class TestCheckPubMojo extends AbstractMojo {
 		this.sourceDir = sourceDir;
 	}
 
+	/**
+	 * For testing.
+	 */
 	void setResultPoster(ResultPoster resultPoster) {
 		this.resultPoster = resultPoster;
+	}
+
+	/**
+	 * For testing.
+	 */
+	void setThrowOnError(boolean throwOnError) {
+		this.throwOnError = throwOnError;
 	}
 
 	private void publish(Log log) throws IOException {
@@ -133,7 +144,7 @@ public class TestCheckPubMojo extends AbstractMojo {
 			secret = System.getenv(secretEnvName);
 			if (secret == null) {
 				log.error("Could not find required env variable: " + secretEnvName);
-				System.exit(1);
+				throwOrExit();
 			}
 		}
 
@@ -149,7 +160,7 @@ public class TestCheckPubMojo extends AbstractMojo {
 		GitContext gitContext = findGitContext(contextFinderType, log);
 		if (gitContext == null) {
 			log.error("Unable to determine git context");
-			System.exit(1);
+			throwOrExit();
 		}
 
 		FrameworkCheckGenerator frameworkGenerator = framework.create(log);
@@ -163,7 +174,7 @@ public class TestCheckPubMojo extends AbstractMojo {
 			frameworkGenerator.loadTestResults(frameworkResults, testReportDir, sourceDir, log);
 		} catch (Exception e) {
 			log.error("Problems loading test results with framework: " + framework, e);
-			System.exit(1);
+			throwOrExit();
 		}
 		if (format != null) {
 			// set our format string
@@ -207,4 +218,11 @@ public class TestCheckPubMojo extends AbstractMojo {
 		}
 	}
 
+	private void throwOrExit() {
+		if (throwOnError) {
+			throw new IllegalStateException("Got error during testing.  See error logs.");
+		} else {
+			System.exit(1);
+		}
+	}
 }

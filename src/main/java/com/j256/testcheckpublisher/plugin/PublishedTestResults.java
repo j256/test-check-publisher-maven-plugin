@@ -32,6 +32,13 @@ public class PublishedTestResults {
 		return magic;
 	}
 
+	/**
+	 * For testing.
+	 */
+	void setMagic(long magic) {
+		this.magic = magic;
+	}
+
 	public boolean isMagicCorrect() {
 		return (magic == MAGIC_VALUE);
 	}
