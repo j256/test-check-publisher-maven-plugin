@@ -18,10 +18,9 @@ import org.apache.maven.plugin.logging.Log;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.j256.testcheckpublisher.plugin.frameworks.FrameworkTestResults.TestFileResult;
-import com.j256.testcheckpublisher.plugin.frameworks.FrameworkTestResults.TestFileResult.TestLevel;
 import com.j256.testcheckpublisher.plugin.frameworks.SurefireTestSuite.Problem;
 import com.j256.testcheckpublisher.plugin.frameworks.SurefireTestSuite.TestCase;
+import com.j256.testcheckpublisher.plugin.frameworks.TestFileResult.TestLevel;
 
 /**
  * Generate a check-run object from surefire XML files.
@@ -37,7 +36,9 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 	private final boolean SHOW_NOTICE = true;
 	private final int DEFAULT_LINE_NUMBER = 1;
 	// try to limit the amount of IO
-	private final int MAX_LINES_READ = 5000;
+	private final int DEFAULT_MAX_LINES_READ = 5000;
+
+	private int maxLinesRead = DEFAULT_MAX_LINES_READ;
 
 	@Override
 	public void loadTestResults(FrameworkTestResults testResults, File testReportDir, File sourceDir, Log log) {
@@ -54,13 +55,13 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 			fileNameMap = getFileNameMap(sourceDir);
 		}
 
-		testResults.setName("Surefire test results");
-
 		File[] files = testReportDir.listFiles();
 		if (files == null || files.length == 0) {
 			log.warn("The surefire test report directory has no files in it: " + testReportDir);
 			return;
 		}
+
+		testResults.setName("Surefire test results");
 		for (File file : files) {
 			Matcher matcher = XML_PATTERN.matcher(file.getName());
 			if (!matcher.matches()) {
@@ -81,6 +82,13 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 			addTestSuite(testResults, suite, className, path, fileName, fileNameMap.get(fileName), log);
 		}
 		log.debug("Added results: " + testResults);
+	}
+
+	/**
+	 * For testing purposes.
+	 */
+	public void setMaxLinesRead(int maxLinesRead) {
+		this.maxLinesRead = maxLinesRead;
 	}
 
 	private File checkDir(String label, File dir, String defaultPath, Log log) {
@@ -161,7 +169,7 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 
 		// print a message if the source file is too long and we didn't match some methods
 		if (tooLongCounter.count > 0) {
-			log.debug("Stopped looking for " + tooLongCounter.count + " methods after processing " + MAX_LINES_READ
+			log.debug("Stopped looking for " + tooLongCounter.count + " methods after processing " + maxLinesRead
 					+ " lines from " + sourceFile);
 		}
 	}
@@ -242,7 +250,7 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 					if (matcher.matches()) {
 						return lineNumber;
 					}
-					if (lineNumber > MAX_LINES_READ) {
+					if (lineNumber > maxLinesRead) {
 						tooLongCounter.count++;
 						return DEFAULT_LINE_NUMBER;
 					}

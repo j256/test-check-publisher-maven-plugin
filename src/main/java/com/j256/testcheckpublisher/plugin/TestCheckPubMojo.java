@@ -1,28 +1,18 @@
 package com.j256.testcheckpublisher.plugin;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.j256.testcheckpublisher.plugin.frameworks.FrameworkCheckGenerator;
 import com.j256.testcheckpublisher.plugin.frameworks.FrameworkCheckGeneratorFactory;
 import com.j256.testcheckpublisher.plugin.frameworks.FrameworkTestResults;
-import com.j256.testcheckpublisher.plugin.frameworks.FrameworkTestResults.TestFileResult;
+import com.j256.testcheckpublisher.plugin.frameworks.TestFileResult;
 import com.j256.testcheckpublisher.plugin.gitcontext.GitContextFinder.GitContext;
 import com.j256.testcheckpublisher.plugin.gitcontext.GitContextFinderType;
 
@@ -71,6 +61,8 @@ public class TestCheckPubMojo extends AbstractMojo {
 	 */
 	@Parameter
 	private String format;
+
+	private ResultPoster resultPoster;
 
 	@Override
 	public void execute() throws MojoExecutionException {
@@ -129,6 +121,10 @@ public class TestCheckPubMojo extends AbstractMojo {
 		this.sourceDir = sourceDir;
 	}
 
+	void setResultPoster(ResultPoster resultPoster) {
+		this.resultPoster = resultPoster;
+	}
+
 	private void publish(Log log) throws IOException {
 
 		// look for our secret environ variable
@@ -185,7 +181,10 @@ public class TestCheckPubMojo extends AbstractMojo {
 
 		log.debug("Posting test-check-publisher plugin results to server..." + frameworkResults.asString());
 		long before = System.currentTimeMillis();
-		postResults(log, frameworkResults, results);
+		if (resultPoster == null) {
+			resultPoster = new ServerResultPoster(serverUrl, log);
+		}
+		resultPoster.postResults(results);
 		log.debug("Posting took " + (System.currentTimeMillis() - before) + " ms");
 	}
 
@@ -208,32 +207,4 @@ public class TestCheckPubMojo extends AbstractMojo {
 		}
 	}
 
-	private void postResults(Log log, FrameworkTestResults frameworkResults, PublishedTestResults results)
-			throws IOException {
-
-		CloseableHttpClient httpclient = HttpClients.createDefault();
-		Gson gson = new GsonBuilder().create();
-
-		HttpPost post = new HttpPost(serverUrl);
-		post.setEntity(new StringEntity(gson.toJson(results)));
-
-		try (CloseableHttpResponse response = httpclient.execute(post);
-				BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
-			if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-				log.info("Posted test-check-publisher plugin results to server: " + frameworkResults.asString());
-			} else {
-				log.error("Posting test-check-publisher plugin results has failed: " + response.getStatusLine());
-				// log the resulting message from the server
-				while (true) {
-					String line = reader.readLine();
-					if (line == null) {
-						break;
-					} else if (line.length() > 0) {
-						log.error("Server response: " + line);
-					}
-				}
-				log.error("Test results were: " + frameworkResults.asString());
-			}
-		}
-	}
 }
