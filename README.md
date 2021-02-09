@@ -6,8 +6,9 @@ them to github as a "check" annotation on a particular commit.  For the full ins
 to get this working, see the
 [Test Check Publisher Github application](https://github.com/apps/test-check-publisher).
 
-* The source code be found on the [git repository](https://github.com/j256/test-check-publisher-maven-plugin).  	 [![CircleCI](https://circleci.com/gh/j256/test-check-publisher-maven-plugin.svg?style=svg)](https://circleci.com/gh/j256/test-check-publisher-maven-plugin) [![CodeCov](https://img.shields.io/codecov/c/github/j256/test-check-publisher-maven-plugin.svg)](https://codecov.io/github/j256/test-check-publisher-maven-plugin/)
-* Maven packages are published via [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.j256.testcheckpublisher/test-check-publisher-maven-plugin/badge.svg?style=flat-square)](https://maven-badges.herokuapp.com/maven-central/com.j256.testcheckpublisher/test-check-publisher-maven-plugin/) [![javadoc](https://javadoc.io/badge2/com.j256.testcheckpublisher/test-check-publisher-maven-plugin/javadoc.svg)](https://javadoc.io/doc/com.j256.testcheckpublisher/test-check-publisher-maven-plugin)
+* The source code be found on the [git repository](https://github.com/j256/test-check-publisher-maven-plugin). ![CircleCI](https://circleci.com/gh/j256/test-check-publisher-maven-plugin.svg?style=svg)](https://circleci.com/gh/j256/test-check-publisher-maven-plugin) [![CodeCov](https://img.shields.io/codecov/c/github/j256/test-check-publisher-maven-plugin.svg)](https://codecov.io/github/j256/test-check-publisher-maven-plugin/)
+* Maven packages are published via [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.j256.testcheckpublisher/test-check-publisher-maven-plugin/badge.svg?style=flat-square)](https://maven-badges.herokuapp.com/maven-central/com.j256.testcheckpublisher/test-check-publisher-maven-plugin/)
+* Documentation: [![javadoc](https://javadoc.io/badge2/com.j256.testcheckpublisher/test-check-publisher-maven-plugin/javadoc.svg)](https://javadoc.io/doc/com.j256.testcheckpublisher/test-check-publisher-maven-plugin)
 
 You need to add the test-check-publisher integration to your repository and then add something like
 the following to your pom.xml file:
@@ -20,7 +21,7 @@ the following to your pom.xml file:
 				<groupId>com.j256.testcheckpublisher</groupId>
 				<artifactId>test-check-publisher-maven-plugin</artifactId>
 				<!-- check for a later version -->
-				<version>1.1</version>
+				<version>1.2</version>
 			</plugin>
 
 After you have run your unit tests, you need to execute:
@@ -31,7 +32,14 @@ After you have run your unit tests, you need to execute:
 
 Right now the plugin is pretty limited to Java/surefire results but it has been built to be more generic.  If you
 have a testing framework that you'd like it to support, please
-[add an issue](https://github.com/j256/test-check-publisher-maven-plugin/issues).
+[add an issue](https://github.com/j256/test-check-publisher-maven-plugin/issues).  All that is required is the loading
+and posting of a JSON entity to the server.
+
+# Examples
+
+Here are some examples of output from github:
+
+* [Cloudwatch Logback Appeneder unit test error](https://github.com/j256/cloudwatch-logback-appender/runs/1865637224)
 
 # Screenshots
 
