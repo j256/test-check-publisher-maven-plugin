@@ -58,7 +58,7 @@ if [ "$rel" != "" ]; then
 fi
 
 # remove the tag if any
-git tag -d "$(LIBRARY)-$release" 2> /dev/null
+git tag -d "$LIBRARY-$release" 2> /dev/null
 
 #############################################################
 # check docs:
@@ -119,8 +119,8 @@ read cont
 if [ "$cont" = "" -o "$cont" = "y" ]; then
     cd $LOCAL_DIR
     mvn -P st release:clean || exit 1
-    mvn $GPG_ARGS -P st release:prepare || exit 1
-    mvn $GPG_ARGS -P st release:perform || exit 1
+    mvn $GPG_ARGS -P st release:prepare || ( echo "Maybe use mvn release:rollback to rollback"; exit 1 )
+    mvn $GPG_ARGS -P st release:perform || ( echo "Maybe use mvn release:rollback to rollback"; exit 1 )
 
     /bin/echo ""
     /bin/echo ""
