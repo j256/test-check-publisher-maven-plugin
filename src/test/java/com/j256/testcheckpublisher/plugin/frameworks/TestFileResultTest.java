@@ -49,7 +49,13 @@ public class TestFileResultTest {
 		assertEquals(0, result1.compareTo(result2));
 		assertEquals(0, result2.compareTo(result1));
 
-		result2 = new TestFileResult(path, startLineNumber, 4, TestLevel.FAILURE, timeSecs, testName, message, details);
+		result2 = new TestFileResult(path, startLineNumber, 4, level, timeSecs, testName, message, details);
+		testNotEquals(result1, result2);
+		assertEquals(0, result1.compareTo(result2));
+		assertEquals(0, result2.compareTo(result1));
+
+		result2 = new TestFileResult(path, startLineNumber, endLineNumber, TestLevel.FAILURE, timeSecs, testName,
+				message, details);
 		testNotEquals(result1, result2);
 		assertEquals(1, result1.compareTo(result2));
 		assertEquals(-1, result2.compareTo(result1));
@@ -78,6 +84,18 @@ public class TestFileResultTest {
 		testNotEquals(result1, result2);
 		assertEquals(0, result1.compareTo(result2));
 		assertEquals(0, result2.compareTo(result1));
+	}
+
+	@Test
+	public void testLineNumber() {
+		TestFileResult result =
+				new TestFileResult("path", 0, 0, TestLevel.NOTICE, 0.0F, "test-name", "message", "details");
+		assertEquals(0, result.getStartLineNumber());
+		assertEquals(0, result.getEndLineNumber());
+		int lineNumber = 10;
+		result.setLineNumber(lineNumber);
+		assertEquals(lineNumber, result.getStartLineNumber());
+		assertEquals(lineNumber, result.getEndLineNumber());
 	}
 
 	@Test

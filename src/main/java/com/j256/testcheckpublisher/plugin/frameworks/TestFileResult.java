@@ -6,6 +6,9 @@ package com.j256.testcheckpublisher.plugin.frameworks;
 public class TestFileResult implements Comparable<TestFileResult> {
 
 	private final String path;
+	/**
+	 * This is here for backwards compatibility. It is not needed if startLineNumber and/or endLineNumber is specified.
+	 */
 	@Deprecated
 	private int lineNumber;
 	private final int startLineNumber;
@@ -107,7 +110,8 @@ public class TestFileResult implements Comparable<TestFileResult> {
 	public int hashCode() {
 		final int prime = 31;
 		int result = prime + ((details == null) ? 0 : details.hashCode());
-		result = prime * result + lineNumber;
+		result = prime * result + getStartLineNumber();
+		result = prime * result + getEndLineNumber();
 		result = prime * result + ((message == null) ? 0 : message.hashCode());
 		result = prime * result + ((path == null) ? 0 : path.hashCode());
 		result = prime * result + ((testLevel == null) ? 0 : testLevel.hashCode());
@@ -129,7 +133,10 @@ public class TestFileResult implements Comparable<TestFileResult> {
 		} else if (!path.equals(other.path)) {
 			return false;
 		}
-		if (lineNumber != other.lineNumber) {
+		if (getStartLineNumber() != other.getStartLineNumber()) {
+			return false;
+		}
+		if (getEndLineNumber() != other.getEndLineNumber()) {
 			return false;
 		}
 		if (testLevel != other.testLevel) {
@@ -164,8 +171,9 @@ public class TestFileResult implements Comparable<TestFileResult> {
 
 	@Override
 	public String toString() {
-		return "TestFileResult [path=" + path + ", line=" + lineNumber + ", level=" + testLevel + ", time="
-				+ timeSeconds + ", test" + testName + ", message=" + message + ", details=" + details + "]";
+		return "TestFileResult [path=" + path + ", startLine=" + getStartLineNumber() + ", endLine="
+				+ getEndLineNumber() + ", level=" + testLevel + ", time=" + timeSeconds + ", test" + testName
+				+ ", message=" + message + ", details=" + details + "]";
 	}
 
 	/**
