@@ -6,14 +6,21 @@
 LIBRARY="test-check-publisher-maven-plugin"
 LOCAL_DIR="$HOME/svn/local/$LIBRARY"
 
+git status | head -1 | fgrep master > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "Should be on master branch."
+    git status | head -1
+    exit 1
+fi
+
 #############################################################
 # check ChangeLog
 
 head -1 src/main/javadoc/doc-files/changelog.txt | fgrep '?' > /dev/null 2>&1
 if [ $? -ne 1 ]; then
-	echo "No question-marks (?) can be in the ChangeLog top line."
-	head -1 src/main/javadoc/doc-files/changelog.txt
-	exit 1
+    echo "No question-marks (?) can be in the ChangeLog top line."
+    head -1 src/main/javadoc/doc-files/changelog.txt
+    exit 1
 fi
 
 #############################################################
@@ -22,9 +29,9 @@ fi
 cd $LOCAL_DIR
 git status | grep 'nothing to commit'
 if [ $? -ne 0 ]; then
-	/bin/echo "Files not checked-in"
-	git status
-	exit 1
+    /bin/echo "Files not checked-in"
+    git status
+    exit 1
 fi
 
 #############################################################
@@ -49,6 +56,9 @@ read rel
 if [ "$rel" != "" ]; then
 	release=$rel
 fi
+
+# remove the tag if any
+git tag -d "$(LIBRARY)-$release" 2> /dev/null
 
 #############################################################
 # check docs:
