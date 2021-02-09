@@ -110,7 +110,6 @@ public class TestFileResult implements Comparable<TestFileResult> {
 	public int hashCode() {
 		final int prime = 31;
 		int result = prime + ((details == null) ? 0 : details.hashCode());
-		result = prime * result + getStartLineNumber();
 		result = prime * result + getEndLineNumber();
 		result = prime * result + ((message == null) ? 0 : message.hashCode());
 		result = prime * result + ((path == null) ? 0 : path.hashCode());
