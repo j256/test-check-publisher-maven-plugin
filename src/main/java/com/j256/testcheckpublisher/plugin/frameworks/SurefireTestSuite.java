@@ -26,7 +26,21 @@ public class SurefireTestSuite {
 
 	@JacksonXmlProperty(localName = "testcase")
 	@JacksonXmlElementWrapper(useWrapping = false)
-	TestCase[] testcases;
+	private TestCase[] testcases;
+
+	public SurefireTestSuite() {
+		// for xml parser
+	}
+
+	public SurefireTestSuite(String name, float timeSeconds, int numTests, int numErrors, int numFailures,
+			TestCase[] testcases) {
+		this.name = name;
+		this.timeSeconds = timeSeconds;
+		this.numTests = numTests;
+		this.numErrors = numErrors;
+		this.numFailures = numFailures;
+		this.testcases = testcases;
+	}
 
 	public String getName() {
 		return name;
@@ -65,6 +79,18 @@ public class SurefireTestSuite {
 		@JacksonXmlProperty
 		Problem failure;
 
+		public TestCase() {
+			// for xml parser
+		}
+
+		public TestCase(String name, String className, float timeSeconds, Problem error, Problem failure) {
+			this.name = name;
+			this.className = className;
+			this.timeSeconds = timeSeconds;
+			this.error = error;
+			this.failure = failure;
+		}
+
 		public String getName() {
 			return name;
 		}
@@ -94,6 +120,16 @@ public class SurefireTestSuite {
 		String type;
 		@JacksonXmlText
 		String body;
+
+		public Problem() {
+			// for xml parser
+		}
+
+		public Problem(String message, String type, String body) {
+			this.message = message;
+			this.type = type;
+			this.body = body;
+		}
 
 		public String getMessage() {
 			return message;
