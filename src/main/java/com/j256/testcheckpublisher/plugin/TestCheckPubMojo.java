@@ -202,20 +202,16 @@ public class TestCheckPubMojo extends AbstractMojo {
 	private GitContext findGitContext(GitContextFinderType finderType, Log log) {
 		GitContext gitContext = finderType.findContext(log);
 		if (gitContext != null) {
-			log.debug("Git context finder " + finderType + ": " + gitContext);
 			return gitContext;
 		}
+		// error already logged
 		GitContextFinderType defaultType = GitContextFinderType.getDefault();
 		if (finderType == defaultType) {
 			return null;
 		}
 		gitContext = defaultType.findContext(log);
-		if (gitContext == null) {
-			return null;
-		} else {
-			log.debug("Git context finder " + defaultType + ": " + gitContext);
-			return gitContext;
-		}
+		// might return null, error already logged
+		return gitContext;
 	}
 
 	private void throwOrExit() {

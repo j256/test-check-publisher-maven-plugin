@@ -31,9 +31,12 @@ public enum GitContextFinderType {
 
 	public GitContext findContext(Log log) {
 		try {
+			log.debug("Finding git context using finder type: " + this);
 			GitContext context = contextFinder.findContext();
 			if (context == null) {
 				log.error("Could not find context using: " + this);
+			} else {
+				log.debug("Git context: " + context);
 			}
 			return context;
 		} catch (Exception e) {
