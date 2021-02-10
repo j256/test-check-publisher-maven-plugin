@@ -36,10 +36,10 @@ Here are some examples of output from github:
 
 # Extensions
 
-Right now the plugin is pretty limited to Java/surefire results but it has been built to be more generic.  If you
-have a testing framework that you'd like it to support, please
-[add an issue](https://github.com/j256/test-check-publisher-maven-plugin/issues).  All that is required is the loading
-and posting of a JSON entity to the server.
+Right now the plugin is pretty limited to Java/surefire results but the system has been built to be more generic.  If
+you have a testing framework that you'd like it to support, please
+[add an issue](https://github.com/j256/test-check-publisher-maven-plugin/issues).  All that is required is the reading
+in test results and posting something like the following JSON entity to the server.
 
 ```
 {
