@@ -28,6 +28,12 @@ After you have run your unit tests, you need to execute:
 
 	mvn test-check-publisher:publish
 
+# Examples
+
+Here are some examples of output from github:
+
+* [Cloudwatch Logback Appeneder unit test error](https://github.com/j256/cloudwatch-logback-appender/runs/1865637224)
+
 # Extensions
 
 Right now the plugin is pretty limited to Java/surefire results but it has been built to be more generic.  If you
@@ -35,15 +41,38 @@ have a testing framework that you'd like it to support, please
 [add an issue](https://github.com/j256/test-check-publisher-maven-plugin/issues).  All that is required is the loading
 and posting of a JSON entity to the server.
 
-# Examples
-
-Here are some examples of output from github:
-
-* [Cloudwatch Logback Appeneder unit test error](https://github.com/j256/cloudwatch-logback-appender/runs/1865637224)
+```
+{
+  "magic": 237347409389423823,
+  "owner": "owner",
+  "repository": "repo",
+  "commitSha": "sha",
+  "secret": "secret env value from installation",
+  "results": {
+    "name": "Test results name",
+    "numTests": 1,
+    "numFailures": 3,
+    "numErrors": 2,
+    "fileResults": [
+      {
+        "path": "path/to/file1.java",
+        "startLineNumber": 101,
+        "endLineNumber": 101,
+        "testLevel": "ERROR",
+        "timeSeconds": 0.1,
+        "testName": "testName",
+        "message": "assert error",
+        "details": "more details here"
+      }
+    ],
+  }
+}
+```
 
 # Screenshots
 
 The following image shows an example of the output that you would see on Github associated with a particular commit.
 This could provide more information if your Continuous Integration run failed because of a unit test issue.
 
-![Example of output](https://marketplace-screenshots.githubusercontent.com/9010/3ee24100-60be-11eb-8cfd-415a6caad49a)
+![Example of output showing how unit test lines in the commit are annotated.](https://marketplace-screenshots.githubusercontent.com/9010/2d1d8680-6b1f-11eb-9f76-cce7353daef8)
+![If a unit test fails that isn't in the commit, the file and line are displayed above for reference.](https://marketplace-screenshots.githubusercontent.com/9010/3ee24100-60be-11eb-8cfd-415a6caad49a)
