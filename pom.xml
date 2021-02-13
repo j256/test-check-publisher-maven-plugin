@@ -30,7 +30,7 @@
 		<maven-plugin-annotations-version>3.4</maven-plugin-annotations-version>
 
 		<!-- test dependencies -->
-		<junit-version>4.13.1</junit-version>
+		<junit-version>4.13.2</junit-version>
 		<easymock-version>3.4</easymock-version>
 	</properties>
 	<developers>
@@ -207,11 +207,6 @@
 					<useReleaseProfile>false</useReleaseProfile>
 					<arguments>-Psonatype-oss-release -DgpgPhase=${gpgPhase} -Dgpg.passphrase=${gpg.passphrase}</arguments>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>com.j256.testcheckpublisher</groupId>
-				<artifactId>test-check-publisher-maven-plugin</artifactId>
-				<version>1.2</version>
 			</plugin>
 		</plugins>
 		<pluginManagement>

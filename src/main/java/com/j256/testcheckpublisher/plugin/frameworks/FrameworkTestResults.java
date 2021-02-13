@@ -16,8 +16,8 @@ public class FrameworkTestResults {
 	private int numTests;
 	private int numFailures;
 	private int numErrors;
-	private List<TestFileResult> fileResults;
 	private String format;
+	private List<TestFileResult> fileResults;
 
 	public FrameworkTestResults() {
 		// for gson
@@ -41,14 +41,6 @@ public class FrameworkTestResults {
 		this.name = name;
 	}
 
-	public String getFormat() {
-		return format;
-	}
-
-	public void setFormat(String format) {
-		this.format = format;
-	}
-
 	public int getNumTests() {
 		return numTests;
 	}
@@ -61,6 +53,14 @@ public class FrameworkTestResults {
 		return numErrors;
 	}
 
+	public String getFormat() {
+		return format;
+	}
+
+	public void setFormat(String format) {
+		this.format = format;
+	}
+
 	/**
 	 * Sort the results and remove any low level results above the max argument.
 	 */
@@ -69,7 +69,7 @@ public class FrameworkTestResults {
 		if (fileResults != null) {
 			Collections.sort(fileResults);
 			for (int i = fileResults.size() - 1; i >= maxNumResults; i--) {
-				fileResults.remove(fileResults.size() - 1);
+				fileResults.remove(i);
 			}
 		}
 	}

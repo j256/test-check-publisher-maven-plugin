@@ -32,7 +32,7 @@ After you have run your unit tests, you need to execute:
 
 Here are some examples of output from github:
 
-* [Cloudwatch Logback Appeneder unit test error](https://github.com/j256/cloudwatch-logback-appender/runs/1865637224)
+* [Cloudwatch Logback Appender unit test error](https://github.com/j256/cloudwatch-logback-appender/runs/1865637224)
 
 # Extensions
 
