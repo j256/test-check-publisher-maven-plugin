@@ -90,6 +90,7 @@ public class TestFileResult implements Comparable<TestFileResult> {
 		} else if (testLevel == null) {
 			return 1;
 		}
+		// higher levels should come earlier
 		int result = other.testLevel.compareValue(testLevel);
 		if (result != 0) {
 			return result;
