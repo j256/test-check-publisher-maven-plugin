@@ -76,3 +76,55 @@ This could provide more information if your Continuous Integration run failed be
 
 ![Example of output showing how unit test lines in the commit are annotated.](https://marketplace-screenshots.githubusercontent.com/9010/2d1d8680-6b1f-11eb-9f76-cce7353daef8)
 ![If a unit test fails that isn't in the commit, the file and line are displayed above for reference.](https://marketplace-screenshots.githubusercontent.com/9010/3ee24100-60be-11eb-8cfd-415a6caad49a)
+
+# Configuration
+
+The maven plugin supports a couple of configuration parameters:
+
+	<plugin>
+		<groupId>com.j256.testcheckpublisher</groupId>
+		<artifactId>test-check-publisher-maven-plugin</artifactId>
+		<configuration>
+			<field>value</field>
+		</configuration>
+	</plugin>
+
+| Field | Default | Description |
+| ----- | ------- | ----------- |
+| serverUrl | See TestCheckPubMojo | URL of the server if you are running your own instance. |
+| maxNumResults | 50 | Maximum number of check results to post.  There is a limit of 500. |
+| secretEnvName | TEST_CHECK_PUBLISHER_SECRET | Name of the environmental variable holding the secret. |
+| secretValue | none | Should not be used for security reasons.  See secretEnvName. |
+| framework | SUREFIRE | Name of the framework to use to read in test results. |
+| context | detected | Name of the context to use to find git owner/repo/commit-sha. |
+| testReportDir | none | Directory holding the tests.  The framework can have a default. |
+| sourceDir | . | Directory holding the sources so we can find file paths. |
+| verbose | false | Verbose log output if mvn -X is used. |
+| format | none | Comma separated tokens that affect the resulting github checks format.  See below. |
+
+# Format Tokens
+
+In the configuration for the plugin, you can specify a comma separated list of tokens which affect the resulting
+check annotations and details formatting. 
+
+The following tokens are supported:
+
+| Token | Default | Description |
+| ----- | ------- | ----------- |
+| nodetails | false | Do not write any entries into the details section at the top. |
+| noemoji | false | Do not show the emoji at the front of each details section. |
+| nonotice | false | Do not emit annotations if the tests pass. |
+| alwaysannotate | false | Always emit annotations even if the code thinks that it was not part of the commit. |
+| noannotate | false | Don't write any annotations.  Only update the details section at the top. |
+| alldetails | false | Write entries into the details section at the top for passing tests as well. |
+
+There are two different checks output sections.  Closer to the top of the page is a details section which is used to
+provide details of the check in markdown.  Below it is the annotations section where file and line-number is annotated
+with the results of a test.  The problem is that not all of the files and line-numbers are shown in the commit.  You
+might make a change to your code and fail a test that hasn't been touched in months and the annotation will look good
+but the link to the file/line will be broken.  The server tries to detect this and writes some of the results into the
+details section and some into the annotations based on whether or not it was involved in the commit.  It's not perfect.
+
+If you want all of your test results in the annotations section then you should use the `nodetails` token.  If you
+think that the details looks good, you might try `noannotate`.  If you want to see the passing tests as well in the
+details section then you might want to add `alldetails`.
