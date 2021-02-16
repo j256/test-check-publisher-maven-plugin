@@ -1,3 +1,7 @@
+1.3: 2/16/2021
+	* Changes to format tokens and some refactoring.
+	* Added ignorePass configuration option.
+
 1.2: 2/9/2021
 	* Added start and end line number to the PublishedTestResults for support of non-Java.
 

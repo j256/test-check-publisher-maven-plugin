@@ -17,7 +17,7 @@ import com.j256.testcheckpublisher.plugin.gitcontext.GitContextFinder.GitContext
 import com.j256.testcheckpublisher.plugin.gitcontext.GitContextFinderType;
 
 /**
- * Maven plugin that posts the check results to the server.
+ * Maven plugin that posts the check results to the server for annotating a commit with the checks-api.
  * 
  * @author graywatson
  */
@@ -26,60 +26,55 @@ public class TestCheckPubMojo extends AbstractMojo {
 
 	private static final String DEFAULT_SERVER_URL = "https://testcheckpublisher.256stuff.com/results";
 	public static final String DEFAULT_SECRET_ENV_NAME = "TEST_CHECK_PUBLISHER_SECRET";
-	private static final int MAX_NUM_RESULTS = 50;
+	private static final int DEFAULT_MAX_NUM_RESULTS = 50;
 	private static final String MAX_NUM_RESULTS_STR = "50";
 	/** ultimate limit to the number of check results we post */
 	private static final int ULTIMATE_MAX_NUM_RESULTS = 500;
 	private static final String DEFAULT_SECRET_VALUE =
 			"This setting should probably not be used for security reasons.  Use the secretEnvName instead.";
 
+	/** URL of the server in case you want to run your own. */
 	@Parameter(defaultValue = DEFAULT_SERVER_URL)
-	private String serverUrl;
+	private String serverUrl = DEFAULT_SERVER_URL;
+	/** Maximum number of results to post to the server up to 500. */
 	@Parameter(defaultValue = MAX_NUM_RESULTS_STR)
-	private int maxNumResults = -1;
+	private int maxNumResults = DEFAULT_MAX_NUM_RESULTS;
+	/** Name of the environmental variable that holds the secret value we need */
 	@Parameter(defaultValue = DEFAULT_SECRET_ENV_NAME)
-	private String secretEnvName;
+	private String secretEnvName = DEFAULT_SECRET_ENV_NAME;
 	/**
 	 * This is not recommended to use for security reasons so that your secret is not checked in or otherwise exposed.
 	 * Use the {@link #secretEnvName} and set the secret in an environment variable.
 	 */
 	@Parameter(defaultValue = DEFAULT_SECRET_VALUE)
 	private String secretValue;
+	/** Test framework that reads in the test results and builds our json entity to post. */
 	@Parameter(defaultValue = "SUREFIRE")
-	private FrameworkCheckGeneratorFactory framework;
+	private FrameworkCheckGeneratorFactory framework = FrameworkCheckGeneratorFactory.SUREFIRE;
+	/** How we find the git information including owner, repo, and commit-sha. */
 	@Parameter
 	private GitContextFinderType context;
+	/** Location of the test-reports read by the framework. The framework supplies the default. */
 	@Parameter
 	private File testReportDir;
-	@Parameter
+	/** Location of the sources for locating files in the repo. */
+	@Parameter(defaultValue = ".")
 	private File sourceDir;
-	/** verbose log output when mvn -X is used */
+	/** Increases the log output when mvn -X is used */
 	@Parameter
 	private boolean verbose;
-	/**
-	 * Format of the results on github. Not used currently.
-	 */
+	/** Comma separated list of tokens that affect the look of the results on github. */
 	@Parameter
 	private String format;
+	/** Ignore posting any information about tests that pass. */
+	@Parameter
+	private boolean ignorePass;
 
 	private ResultPoster resultPoster;
 	private boolean throwOnError;
 
 	@Override
 	public void execute() throws MojoExecutionException {
-
-		if (secretEnvName == null) {
-			secretEnvName = DEFAULT_SECRET_ENV_NAME;
-		}
-		if (serverUrl == null) {
-			serverUrl = DEFAULT_SERVER_URL;
-		}
-		if (maxNumResults < 0) {
-			maxNumResults = MAX_NUM_RESULTS;
-		}
-		if (framework == null) {
-			framework = FrameworkCheckGeneratorFactory.SUREFIRE;
-		}
 
 		Log log = getLog();
 		log.info("Posting test-check-publisher plugin results to server...");
@@ -180,7 +175,7 @@ public class TestCheckPubMojo extends AbstractMojo {
 			// set our format string
 			frameworkResults.setFormat(format);
 		}
-		frameworkResults.limitFileResults(maxNumResults);
+		frameworkResults.limitFileResults(maxNumResults, ignorePass);
 		if (verbose) {
 			for (TestFileResult result : frameworkResults.getFileResults()) {
 				log.debug("result: " + result);

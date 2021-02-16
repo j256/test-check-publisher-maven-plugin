@@ -91,8 +91,8 @@ The maven plugin supports a couple of configuration parameters:
 
 | Field | Default | Description |
 | ----- | ------- | ----------- |
-| serverUrl | See TestCheckPubMojo | URL of the server if you are running your own instance. |
-| maxNumResults | 50 | Maximum number of check results to post.  There is a limit of 500. |
+| serverUrl | See TestCheckPubMojo.java | URL of the server if you are running your own instance. |
+| maxNumResults | 50 | Maximum number of check results to post up to an internal limit of 500. |
 | secretEnvName | TEST_CHECK_PUBLISHER_SECRET | Name of the environmental variable holding the secret. |
 | secretValue | none | Should not be used for security reasons.  See secretEnvName. |
 | framework | SUREFIRE | Name of the framework to use to read in test results. |
@@ -101,6 +101,7 @@ The maven plugin supports a couple of configuration parameters:
 | sourceDir | . | Directory holding the sources so we can find file paths. |
 | verbose | false | Verbose log output if mvn -X is used. |
 | format | none | Comma separated tokens that affect the resulting github checks format.  See below. |
+| ignorePass | false | Do not post any information about tests that pass. |
 
 # Format Tokens
 

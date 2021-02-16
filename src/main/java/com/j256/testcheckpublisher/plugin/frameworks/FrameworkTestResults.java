@@ -3,7 +3,10 @@ package com.j256.testcheckpublisher.plugin.frameworks;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+
+import com.j256.testcheckpublisher.plugin.frameworks.TestFileResult.TestLevel;
 
 /**
  * Results from the test framework.
@@ -64,12 +67,22 @@ public class FrameworkTestResults {
 	/**
 	 * Sort the results and remove any low level results above the max argument.
 	 */
-	public void limitFileResults(int maxNumResults) {
+	public void limitFileResults(int maxNumResults, boolean ignorePass) {
 		// sort and remove results above our limit
-		if (fileResults != null) {
-			Collections.sort(fileResults);
-			for (int i = fileResults.size() - 1; i >= maxNumResults; i--) {
-				fileResults.remove(i);
+		if (fileResults == null || fileResults.size() == 0) {
+			return;
+		}
+		// sort so errors and failures come first
+		Collections.sort(fileResults);
+		int count = 0;
+		Iterator<TestFileResult> iterator = fileResults.iterator();
+		while (iterator.hasNext()) {
+			TestFileResult result = iterator.next();
+			// remove if we are above our max or ignoring passing tests notices
+			if (count >= maxNumResults || (ignorePass && result.getTestLevel() == TestLevel.NOTICE)) {
+				iterator.remove();
+			} else {
+				count++;
 			}
 		}
 	}

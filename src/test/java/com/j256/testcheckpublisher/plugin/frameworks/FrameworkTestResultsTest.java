@@ -23,7 +23,7 @@ public class FrameworkTestResultsTest {
 		assertEquals(numErrors, results.getNumErrors());
 		assertEquals(format, results.getFormat());
 		assertNull(results.getFileResults());
-		results.limitFileResults(10);
+		results.limitFileResults(10, false);
 		assertNull(results.getFileResults());
 		assertEquals(name + ": " + numTests + " tests, " + numFailures + " failures, " + numErrors
 				+ " errors, 0 file-results", results.asString());
@@ -37,19 +37,33 @@ public class FrameworkTestResultsTest {
 		format = "format2";
 		results.setFormat(format);
 		assertEquals(format, results.getFormat());
+	}
+
+	@Test
+	public void testLimit() {
+		FrameworkTestResults results = new FrameworkTestResults("name", 1, 2, 3, null, null);
 
 		TestFileResult fileResult =
 				new TestFileResult("path", 1, 1, TestLevel.ERROR, 0.1F, "testName", "messag", "details");
 		results.addFileResult(fileResult);
 		results.addFileResult(fileResult);
 		results.addFileResult(fileResult);
-		assertEquals(name + ": " + (numTests + 1) + " tests, " + (numFailures + 2) + " failures, " + (numErrors + 3)
-				+ " errors, 3 file-results", results.asString());
 
 		assertEquals(3, results.getFileResults().size());
-		results.limitFileResults(10);
+		results.limitFileResults(10, false);
 		assertEquals(3, results.getFileResults().size());
-		results.limitFileResults(1);
+		results.limitFileResults(1, false);
+		assertEquals(1, results.getFileResults().size());
+
+		fileResult = new TestFileResult("path", 1, 1, TestLevel.NOTICE, 0.1F, "testName", "messag", "details");
+		results.addFileResult(fileResult);
+		results.addFileResult(fileResult);
+		results.addFileResult(fileResult);
+
+		assertEquals(4, results.getFileResults().size());
+		results.limitFileResults(10, false);
+		assertEquals(4, results.getFileResults().size());
+		results.limitFileResults(10, true);
 		assertEquals(1, results.getFileResults().size());
 	}
 
