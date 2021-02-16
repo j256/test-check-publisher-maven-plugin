@@ -112,11 +112,11 @@ The following tokens are supported:
 | Token | Default | Description |
 | ----- | ------- | ----------- |
 | nodetails | false | Do not write any entries into the details section at the top. |
-| noemoji | false | Do not show the emoji at the front of each details section. |
-| nonotice | false | Do not emit annotations if the tests pass. |
-| alwaysannotate | false | Always emit annotations even if the code thinks that it was not part of the commit. |
 | noannotate | false | Don't write any annotations.  Only update the details section at the top. |
-| alldetails | false | Write entries into the details section at the top for passing tests as well. |
+| nopass | false | Do not emit annotations or details if the tests pass. |
+| alwaysannotate | false | Always emit annotations even if the test was not part of the commit. |
+| noemoji | false | Do not show the emoji at the front of each details section. |
+| passdetails | false | Write details for passing tests as well. |
 
 There are two different checks output sections.  Closer to the top of the page is a details section which is used to
 provide details of the check in markdown.  Below it is the annotations section where file and line-number is annotated
