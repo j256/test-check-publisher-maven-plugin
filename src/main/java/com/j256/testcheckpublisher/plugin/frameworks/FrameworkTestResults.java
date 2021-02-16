@@ -19,6 +19,7 @@ public class FrameworkTestResults {
 	private int numTests;
 	private int numFailures;
 	private int numErrors;
+	private int numSkipped;
 	private String format;
 	private List<TestFileResult> fileResults;
 
@@ -26,12 +27,13 @@ public class FrameworkTestResults {
 		// for gson
 	}
 
-	public FrameworkTestResults(String name, int numTests, int numFailures, int numErrors,
+	public FrameworkTestResults(String name, int numTests, int numFailures, int numErrors, int numSkipped,
 			List<TestFileResult> fileResults, String format) {
 		this.name = name;
 		this.numTests = numTests;
 		this.numFailures = numFailures;
 		this.numErrors = numErrors;
+		this.numSkipped = numSkipped;
 		this.fileResults = fileResults;
 		this.format = format;
 	}
@@ -54,6 +56,10 @@ public class FrameworkTestResults {
 
 	public int getNumErrors() {
 		return numErrors;
+	}
+
+	public int getNumSkipped() {
+		return numSkipped;
 	}
 
 	public String getFormat() {
@@ -91,10 +97,11 @@ public class FrameworkTestResults {
 		return fileResults;
 	}
 
-	public void addCounts(int numTests, int numFailures, int numErrors) {
+	public void addCounts(int numTests, int numFailures, int numErrors, int numSkipped) {
 		this.numTests += numTests;
 		this.numFailures += numFailures;
 		this.numErrors += numErrors;
+		this.numSkipped += numSkipped;
 	}
 
 	public void addFileResult(TestFileResult result) {
@@ -117,6 +124,9 @@ public class FrameworkTestResults {
 		if (numErrors > 0) {
 			sb.append(numErrors).append(" errors, ");
 		}
+		if (numSkipped > 0) {
+			sb.append(numSkipped).append(" skipped, ");
+		}
 		if (fileResults == null) {
 			sb.append('0');
 		} else {
@@ -129,7 +139,7 @@ public class FrameworkTestResults {
 	@Override
 	public String toString() {
 		return "FrameworkTestResults [name=" + name + ", numTests=" + numTests + ", numFailures=" + numFailures
-				+ ", numErrors=" + numErrors + ", numFileResults=" + (fileResults == null ? 0 : fileResults.size())
-				+ "]";
+				+ ", numErrors=" + numErrors + ", numSkipped" + numSkipped + ", numFileResults="
+				+ (fileResults == null ? 0 : fileResults.size()) + "]";
 	}
 }

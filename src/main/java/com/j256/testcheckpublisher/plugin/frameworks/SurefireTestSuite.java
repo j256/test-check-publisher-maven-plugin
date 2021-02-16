@@ -23,6 +23,8 @@ public class SurefireTestSuite {
 	private int numErrors;
 	@JacksonXmlProperty(isAttribute = true, localName = "failures")
 	private int numFailures;
+	@JacksonXmlProperty(isAttribute = true, localName = "skipped")
+	private int numSkipped;
 
 	@JacksonXmlProperty(localName = "testcase")
 	@JacksonXmlElementWrapper(useWrapping = false)
@@ -33,12 +35,13 @@ public class SurefireTestSuite {
 	}
 
 	public SurefireTestSuite(String name, float timeSeconds, int numTests, int numErrors, int numFailures,
-			TestCase[] testcases) {
+			int numSkipped, TestCase[] testcases) {
 		this.name = name;
 		this.timeSeconds = timeSeconds;
 		this.numTests = numTests;
 		this.numErrors = numErrors;
 		this.numFailures = numFailures;
+		this.numSkipped = numSkipped;
 		this.testcases = testcases;
 	}
 
@@ -60,6 +63,10 @@ public class SurefireTestSuite {
 
 	public int getNumFailures() {
 		return numFailures;
+	}
+
+	public int getNumSkipped() {
+		return numSkipped;
 	}
 
 	public TestCase[] getTestcases() {

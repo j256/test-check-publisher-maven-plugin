@@ -11,17 +11,13 @@ to get this working, see the
 * Documentation: [![javadoc](https://javadoc.io/badge2/com.j256.testcheckpublisher/test-check-publisher-maven-plugin/javadoc.svg)](https://javadoc.io/doc/com.j256.testcheckpublisher/test-check-publisher-maven-plugin)
 
 You need to add the test-check-publisher integration to your repository and then add something like
-the following to your pom.xml file:
+the following to your `pom.xml` file in the build, plugins section:
 
-	<build>
-		...
-		<plugins>
-			...
-			<plugin>
-				<groupId>com.j256.testcheckpublisher</groupId>
-				<artifactId>test-check-publisher-maven-plugin</artifactId>
-				<version>1.3</version>
-			</plugin>
+	<plugin>
+		<groupId>com.j256.testcheckpublisher</groupId>
+		<artifactId>test-check-publisher-maven-plugin</artifactId>
+		<version>1.3</version>
+	</plugin>
 
 After you have run your unit tests, you need to execute:
 
@@ -31,7 +27,7 @@ After you have run your unit tests, you need to execute:
 
 Here are some examples of output from github:
 
-* [Cloudwatch Logback Appender unit test error](https://github.com/j256/cloudwatch-logback-appender/runs/1865637224)
+* [Simulated errors](https://github.com/j256/test-check-publisher-maven-plugin/runs/1914518549)
 
 # Extensions
 
@@ -49,9 +45,10 @@ in test results and posting something like the following JSON entity to the serv
   "secret": "secret env value from installation",
   "results": {
     "name": "Test results name",
-    "numTests": 1,
-    "numFailures": 3,
+    "numTests": 10,
+    "numFailures": 1,
     "numErrors": 2,
+    "numSkipped": 0,
     "fileResults": [
       {
         "path": "path/to/file1.java",

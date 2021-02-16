@@ -17,6 +17,7 @@ public class SurefireTestSuiteTest {
 		int numTests = 10;
 		int numErrors = 1;
 		int numFailures = 2;
+		int numSkipped = 3;
 
 		String className = "classname";
 		String message = "message";
@@ -29,12 +30,13 @@ public class SurefireTestSuiteTest {
 
 		TestCase[] testCases = new TestCase[] { testCase };
 		SurefireTestSuite testSuite =
-				new SurefireTestSuite(name, timeSecs, numTests, numErrors, numFailures, testCases);
+				new SurefireTestSuite(name, timeSecs, numTests, numErrors, numFailures, numSkipped, testCases);
 		assertEquals(name, testSuite.getName());
 		assertEquals(timeSecs, testSuite.getTimeSeconds(), 0);
 		assertEquals(numTests, testSuite.getNumTests());
 		assertEquals(numErrors, testSuite.getNumErrors());
 		assertEquals(numFailures, testSuite.getNumFailures());
+		assertEquals(numSkipped, testSuite.getNumSkipped());
 		assertArrayEquals(testCases, testSuite.getTestcases());
 
 		assertEquals(name, testCase.getName());
