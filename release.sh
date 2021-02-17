@@ -33,10 +33,6 @@ if [ $? -ne 0 ]; then
     bad=1
 fi
 
-if [ $bad -ne 0 ]; then
-    exit 1
-fi
-
 #############################################################
 # check maven settings
 
@@ -51,18 +47,12 @@ fi
 release=$(grep version pom.xml | grep SNAPSHOT | head -1 | cut -f2 -d\> | cut -f1 -d\-)
 
 /bin/echo ""
-/bin/echo ""
 /bin/echo "------------------------------------------------------- "
 /bin/echo -n "Enter release number [$release]: "
 read rel
 if [ "$rel" != "" ]; then
     release=$rel
 fi
-
-# remove the local and remote tag if any
-tag="$LIBRARY-$release"
-git tag -d $tag 2> /dev/null
-git push --delete origin $tag 2> /dev/null
 
 #############################################################
 # check docs:
@@ -107,6 +97,11 @@ mvn test || exit 1
 /bin/echo "------------------------------------------------------- "
 /bin/echo "Releasing version '$release'"
 sleep 3
+
+# remove the local and remote tag if any
+tag="$LIBRARY-$release"
+git tag -d $tag 2> /dev/null
+git push --delete origin $tag 2> /dev/null
 
 #############################################################
 # releasing to sonatype
