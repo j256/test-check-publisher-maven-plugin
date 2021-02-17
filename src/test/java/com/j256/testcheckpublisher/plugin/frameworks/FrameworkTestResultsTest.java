@@ -15,21 +15,24 @@ public class FrameworkTestResultsTest {
 		int numTests = 1;
 		int numFailures = 2;
 		int numErrors = 3;
+		int numSkipped = 4;
 		String format = "format";
-		FrameworkTestResults results = new FrameworkTestResults(name, numTests, numFailures, numErrors, null, format);
+		FrameworkTestResults results =
+				new FrameworkTestResults(name, numTests, numFailures, numErrors, numSkipped, null, format);
 		assertEquals(name, results.getName());
 		assertEquals(numTests, results.getNumTests());
 		assertEquals(numFailures, results.getNumFailures());
 		assertEquals(numErrors, results.getNumErrors());
+		assertEquals(numSkipped, results.getNumSkipped());
 		assertEquals(format, results.getFormat());
 		assertNull(results.getFileResults());
 		results.limitFileResults(10, false);
 		assertNull(results.getFileResults());
-		assertEquals(name + ": " + numTests + " tests, " + numFailures + " failures, " + numErrors
-				+ " errors, 0 file-results", results.asString());
-		results.addCounts(1, 2, 3);
+		assertEquals(name + ": " + numTests + " tests, " + numFailures + " failures, " + numErrors + " errors, "
+				+ numSkipped + " skipped, 0 file-results", results.asString());
+		results.addCounts(1, 2, 3, 4);
 		assertEquals(name + ": " + (numTests + 1) + " tests, " + (numFailures + 2) + " failures, " + (numErrors + 3)
-				+ " errors, 0 file-results", results.asString());
+				+ " errors, " + (numSkipped + 4) + " skipped, 0 file-results", results.asString());
 
 		name = "name2";
 		results.setName(name);
@@ -41,7 +44,7 @@ public class FrameworkTestResultsTest {
 
 	@Test
 	public void testLimit() {
-		FrameworkTestResults results = new FrameworkTestResults("name", 1, 2, 3, null, null);
+		FrameworkTestResults results = new FrameworkTestResults("name", 1, 2, 3, 4, null, null);
 
 		TestFileResult fileResult =
 				new TestFileResult("path", 1, 1, TestLevel.ERROR, 0.1F, "testName", "messag", "details");

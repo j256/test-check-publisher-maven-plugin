@@ -98,23 +98,6 @@ mvn test || exit 1
 #############################################################
 
 /bin/echo ""
-/bin/echo -n "Enter the GPG pass-phrase: "
-read gpgpass
-
-GPG_ARGS="-Darguments=-Dgpg.passphrase=$gpgpass -Dgpg.passphrase=$gpgpass -DgpgPhase=verify"
-
-tmp="/tmp/release.sh.$$.t"
-touch $tmp
-gpg --passphrase $gpgpass -s -u D3412AC1 $tmp > /dev/null 2>&1
-if [ $? -ne 0 ]; then
-    /bin/echo "Passphrase incorrect"
-    exit 1
-fi
-rm -f $tmp*
-
-#############################################################
-
-/bin/echo ""
 /bin/echo "------------------------------------------------------- "
 /bin/echo "Releasing version '$release'"
 sleep 3
@@ -129,8 +112,8 @@ read cont
 if [ "$cont" = "" -o "$cont" = "y" ]; then
     cd $LOCAL_DIR
     mvn -P st release:clean || exit 1
-    mvn $GPG_ARGS -P st release:prepare || ( /bin/echo "Maybe use mvn release:rollback to rollback"; exit 1 )
-    mvn $GPG_ARGS -P st release:perform || ( /bin/echo "Maybe use mvn release:rollback to rollback"; exit 1 )
+    mvn -P st release:prepare || ( /bin/echo "Maybe use mvn release:rollback to rollback"; exit 1 )
+    mvn -P st release:perform || ( /bin/echo "Maybe use mvn release:rollback to rollback"; exit 1 )
 
     /bin/echo ""
     /bin/echo ""

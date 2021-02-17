@@ -27,8 +27,9 @@ public class PublishedTestResultsTest {
 		int numTests = 1;
 		int numErrors = 2;
 		int numFailures = 3;
-		FrameworkTestResults frameworkResults =
-				new FrameworkTestResults(frameworkResultsName, numTests, numFailures, numErrors, null, "format");
+		int numSkipped = 4;
+		FrameworkTestResults frameworkResults = new FrameworkTestResults(frameworkResultsName, numTests, numFailures,
+				numErrors, numSkipped, null, "format");
 		PublishedTestResults results = new PublishedTestResults(owner, repo, sha, secret, frameworkResults);
 		assertEquals(owner, results.getOwner());
 		assertEquals(repo, results.getRepository());
@@ -36,7 +37,7 @@ public class PublishedTestResultsTest {
 		assertEquals(secret, results.getSecret());
 		assertEquals(frameworkResults, results.getResults());
 		assertEquals(frameworkResultsName + ": " + numTests + " tests, " + numFailures + " failures, " + numErrors
-				+ " errors, 0 file-results", results.asString());
+				+ " errors, " + numSkipped + " skipped, 0 file-results", results.asString());
 		assertEquals(PublishedTestResults.MAGIC_VALUE, results.getMagic());
 		assertTrue(results.isMagicCorrect());
 		results.setMagic(1);
@@ -57,12 +58,13 @@ public class PublishedTestResultsTest {
 		int numTests = 1;
 		int numErrors = 2;
 		int numFailures = 3;
+		int numSkipped = 3;
 
 		TestFileResult fileResult = new TestFileResult("file1.java", 100, 100, TestLevel.ERROR, 0.1F, "testName",
 				"test message", "more details here");
 
 		FrameworkTestResults frameworkResults = new FrameworkTestResults(frameworkResultsName, numTests, numFailures,
-				numErrors, Arrays.asList(fileResult), "format");
+				numErrors, numSkipped, Arrays.asList(fileResult), "format");
 		PublishedTestResults results = new PublishedTestResults(owner, repo, sha, secret, frameworkResults);
 
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();

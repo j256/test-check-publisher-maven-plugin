@@ -130,7 +130,7 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 			String fileName, File sourceFile, Log log) {
 
 		int lineNumber;
-		testResults.addCounts(suite.getNumTests(), suite.getNumFailures(), suite.getNumErrors());
+		testResults.addCounts(suite.getNumTests(), suite.getNumFailures(), suite.getNumErrors(), suite.getNumSkipped());
 
 		MutableInteger sourceFileMissingCounter = new MutableInteger();
 		MutableInteger tooLongCounter = new MutableInteger();
