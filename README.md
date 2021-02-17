@@ -47,3 +47,4 @@ The following image shows an example of the output that you would see on Github 
 This could provide more information if your Continuous Integration run failed because of a unit test issue.
 
 ![Example of output](https://marketplace-screenshots.githubusercontent.com/9010/3ee24100-60be-11eb-8cfd-415a6caad49a)
+
