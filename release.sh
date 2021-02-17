@@ -6,31 +6,34 @@
 LIBRARY="test-check-publisher-maven-plugin"
 LOCAL_DIR="$HOME/svn/local/$LIBRARY"
 
+#############################################################
+# check initial stuffx
+
+bad=0
+
 git status | head -1 | fgrep master > /dev/null 2>&1
 if [ $? -ne 0 ]; then
     /bin/echo "Should be on master branch."
     git status | head -1
-    exit 1
+    bad=1
 fi
-
-#############################################################
-# check ChangeLog
 
 head -1 src/main/javadoc/doc-files/changelog.txt | fgrep '?' > /dev/null 2>&1
 if [ $? -ne 1 ]; then
     /bin/echo "No question-marks (?) can be in the ChangeLog top line."
     head -1 src/main/javadoc/doc-files/changelog.txt
-    exit 1
+    bad=1
 fi
-
-#############################################################
-# check for not commited files:
 
 cd $LOCAL_DIR
 git status | grep 'nothing to commit'
 if [ $? -ne 0 ]; then
     /bin/echo "Files not checked-in"
     git status
+    bad=1
+fi
+
+if [ $bad -ne 0 ]; then
     exit 1
 fi
 
@@ -47,7 +50,6 @@ fi
 
 release=$(grep version pom.xml | grep SNAPSHOT | head -1 | cut -f2 -d\> | cut -f1 -d\-)
 
-/bin/echo ""
 /bin/echo ""
 /bin/echo ""
 /bin/echo "------------------------------------------------------- "
@@ -70,7 +72,7 @@ ver=$(head -1 src/main/javadoc/doc-files/changelog.txt | cut -f1 -d:)
 if [ "$release" != "$ver" ]; then
     /bin/echo "Change log top line version seems wrong:"
     head -1 src/main/javadoc/doc-files/changelog.txt
-    exit 1
+    bad=1
 fi
 
 if [ -r "src/main/doc/$LIBRARY.texi" ]; then
@@ -86,6 +88,10 @@ fi
 grep -q $release README.md
 if [ $? != 0 ]; then
     /bin/echo "Could not find $release in README.md"
+    bad=1
+fi
+
+if [ $bad -ne 0 ]; then
     exit 1
 fi
 
