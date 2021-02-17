@@ -1,3 +1,6 @@
+1.5: 2/16/2021
+	* Moved the format up to the PublishedTestResults.
+
 1.4: 2/16/2021
 	* Added optional numSkipped value to test results.
 

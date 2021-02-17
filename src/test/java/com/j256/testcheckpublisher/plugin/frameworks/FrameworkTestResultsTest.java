@@ -16,15 +16,13 @@ public class FrameworkTestResultsTest {
 		int numFailures = 2;
 		int numErrors = 3;
 		int numSkipped = 4;
-		String format = "format";
 		FrameworkTestResults results =
-				new FrameworkTestResults(name, numTests, numFailures, numErrors, numSkipped, null, format);
+				new FrameworkTestResults(name, numTests, numFailures, numErrors, numSkipped, null);
 		assertEquals(name, results.getName());
 		assertEquals(numTests, results.getNumTests());
 		assertEquals(numFailures, results.getNumFailures());
 		assertEquals(numErrors, results.getNumErrors());
 		assertEquals(numSkipped, results.getNumSkipped());
-		assertEquals(format, results.getFormat());
 		assertNull(results.getFileResults());
 		results.limitFileResults(10, false);
 		assertNull(results.getFileResults());
@@ -37,14 +35,11 @@ public class FrameworkTestResultsTest {
 		name = "name2";
 		results.setName(name);
 		assertEquals(name, results.getName());
-		format = "format2";
-		results.setFormat(format);
-		assertEquals(format, results.getFormat());
 	}
 
 	@Test
 	public void testLimit() {
-		FrameworkTestResults results = new FrameworkTestResults("name", 1, 2, 3, 4, null, null);
+		FrameworkTestResults results = new FrameworkTestResults("name", 1, 2, 3, 4, null);
 
 		TestFileResult fileResult =
 				new TestFileResult("path", 1, 1, TestLevel.ERROR, 0.1F, "testName", "messag", "details");

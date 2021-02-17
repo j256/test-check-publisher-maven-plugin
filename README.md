@@ -16,7 +16,7 @@ the following to your `pom.xml` file in the build, plugins section:
 	<plugin>
 		<groupId>com.j256.testcheckpublisher</groupId>
 		<artifactId>test-check-publisher-maven-plugin</artifactId>
-		<version>1.4</version>
+		<version>1.5</version>
 	</plugin>
 
 After you have run your unit tests, you need to execute:
