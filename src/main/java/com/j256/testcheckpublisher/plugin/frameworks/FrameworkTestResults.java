@@ -139,7 +139,7 @@ public class FrameworkTestResults {
 	@Override
 	public String toString() {
 		return "FrameworkTestResults [name=" + name + ", numTests=" + numTests + ", numFailures=" + numFailures
-				+ ", numErrors=" + numErrors + ", numSkipped" + numSkipped + ", numFileResults="
+				+ ", numErrors=" + numErrors + ", numSkipped=" + numSkipped + ", numFileResults="
 				+ (fileResults == null ? 0 : fileResults.size()) + "]";
 	}
 }
