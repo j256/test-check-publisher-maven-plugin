@@ -171,10 +171,6 @@ public class TestCheckPubMojo extends AbstractMojo {
 			log.error("Problems loading test results with framework: " + framework, e);
 			throwOrExit();
 		}
-		if (format != null) {
-			// set our format string
-			frameworkResults.setFormat(format);
-		}
 		frameworkResults.limitFileResults(maxNumResults, ignorePass);
 		if (verbose) {
 			for (TestFileResult result : frameworkResults.getFileResults()) {
@@ -183,7 +179,7 @@ public class TestCheckPubMojo extends AbstractMojo {
 		}
 
 		PublishedTestResults results = new PublishedTestResults(gitContext.getOwner(), gitContext.getRepository(),
-				gitContext.getCommitSha(), secret, frameworkResults);
+				gitContext.getCommitSha(), secret, format, frameworkResults);
 
 		log.debug("Posting test-check-publisher plugin results to server..." + frameworkResults.asString());
 		long before = System.currentTimeMillis();

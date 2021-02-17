@@ -20,6 +20,8 @@ public class FrameworkTestResults {
 	private int numFailures;
 	private int numErrors;
 	private int numSkipped;
+	/** format is now in the PublishedTestResults */
+	@Deprecated
 	private String format;
 	private List<TestFileResult> fileResults;
 
@@ -28,14 +30,13 @@ public class FrameworkTestResults {
 	}
 
 	public FrameworkTestResults(String name, int numTests, int numFailures, int numErrors, int numSkipped,
-			List<TestFileResult> fileResults, String format) {
+			List<TestFileResult> fileResults) {
 		this.name = name;
 		this.numTests = numTests;
 		this.numFailures = numFailures;
 		this.numErrors = numErrors;
 		this.numSkipped = numSkipped;
 		this.fileResults = fileResults;
-		this.format = format;
 	}
 
 	public String getName() {
@@ -62,10 +63,15 @@ public class FrameworkTestResults {
 		return numSkipped;
 	}
 
+	@Deprecated
 	public String getFormat() {
 		return format;
 	}
 
+	/**
+	 * For testing purposes.
+	 */
+	@Deprecated
 	public void setFormat(String format) {
 		this.format = format;
 	}
@@ -118,12 +124,12 @@ public class FrameworkTestResults {
 		StringBuilder sb = new StringBuilder();
 		sb.append(name).append(": ");
 		sb.append(numTests).append(" tests, ");
-		// failures all of the time
 		sb.append(numFailures).append(" failures, ");
 		// errors only if there are some
 		if (numErrors > 0) {
 			sb.append(numErrors).append(" errors, ");
 		}
+		// skipped only if there are some
 		if (numSkipped > 0) {
 			sb.append(numSkipped).append(" skipped, ");
 		}

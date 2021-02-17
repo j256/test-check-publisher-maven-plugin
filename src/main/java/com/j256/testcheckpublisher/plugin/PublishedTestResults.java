@@ -16,15 +16,18 @@ public class PublishedTestResults {
 	private String repository;
 	private String commitSha;
 	private String secret;
+	// can be null if it is in the results because of backwards compatibility
+	private String format;
 	private FrameworkTestResults results;
 
-	public PublishedTestResults(String owner, String repository, String commitSha, String secret,
+	public PublishedTestResults(String owner, String repository, String commitSha, String secret, String format,
 			FrameworkTestResults results) {
 		this.magic = MAGIC_VALUE;
 		this.owner = owner;
 		this.repository = repository;
 		this.commitSha = commitSha;
 		this.secret = secret;
+		this.format = format;
 		this.results = results;
 	}
 
@@ -57,6 +60,17 @@ public class PublishedTestResults {
 
 	public String getSecret() {
 		return secret;
+	}
+
+	@SuppressWarnings("deprecation")
+	public String getFormat() {
+		if (format != null) {
+			return format;
+		} else if (results == null) {
+			return null;
+		} else {
+			return results.getFormat();
+		}
 	}
 
 	public String asString() {
