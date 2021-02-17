@@ -27,7 +27,7 @@ After you have run your unit tests, you need to execute:
 
 Here are some examples of output from github:
 
-* [Simulated errors](https://github.com/j256/test-check-publisher-maven-plugin/runs/1914518549)
+* [Simulated errors](https://github.com/j256/test-check-publisher-maven-plugin/runs/1916045608)
 
 # Extensions
 
