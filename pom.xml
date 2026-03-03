@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.j256.testcheckpublisher</groupId>
 	<artifactId>test-check-publisher-maven-plugin</artifactId>
-	<version>1.6</version>
+	<version>1.7-SNAPSHOT</version>
 	<packaging>maven-plugin</packaging>
 	<name>Test Check Publisher Maven Plugin</name>
 	<description>Published unit test results to github to annotate a commit with check information.</description>
@@ -49,7 +49,7 @@
 		<url>https://github.com/j256/test-check-publisher-maven-plugin</url>
 		<connection>scm:git:ssh://git@github.com/j256/test-check-publisher-maven-plugin.git</connection>
 		<developerConnection>scm:git:ssh://git@github.com/j256/test-check-publisher-maven-plugin.git</developerConnection>
-	  <tag>test-check-publisher-maven-plugin-1.6</tag>
+	  <tag>HEAD</tag>
   </scm>
 	<build>
 		<finalName>test-check-publisher-maven-plugin</finalName>
