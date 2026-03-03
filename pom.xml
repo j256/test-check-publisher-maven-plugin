@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.j256.testcheckpublisher</groupId>
 	<artifactId>test-check-publisher-maven-plugin</artifactId>
-	<version>1.7-SNAPSHOT</version>
+	<version>1.6-SNAPSHOT</version>
 	<packaging>maven-plugin</packaging>
 	<name>Test Check Publisher Maven Plugin</name>
 	<description>Published unit test results to github to annotate a commit with check information.</description>
@@ -49,8 +49,7 @@
 		<url>https://github.com/j256/test-check-publisher-maven-plugin</url>
 		<connection>scm:git:ssh://git@github.com/j256/test-check-publisher-maven-plugin.git</connection>
 		<developerConnection>scm:git:ssh://git@github.com/j256/test-check-publisher-maven-plugin.git</developerConnection>
-	  <tag>HEAD</tag>
-  </scm>
+	</scm>
 	<build>
 		<finalName>test-check-publisher-maven-plugin</finalName>
 		<!-- Resources -->
@@ -67,24 +66,6 @@
 		</testResources>
 		<!-- Plugins -->
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-release-plugin</artifactId>
-				<configuration>
-					<mavenExecutorId>forked-path</mavenExecutorId>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.sonatype.central</groupId>
-				<artifactId>central-publishing-maven-plugin</artifactId>
-				<version>0.9.0</version>
-				<extensions>true</extensions>
-				<configuration>
-					<publishingServerId>sonatype-nexus-staging</publishingServerId>
-					<!-- <autoPublish>true</autoPublish>
-					<waitUntil>published</waitUntil> -->
-				</configuration>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -187,6 +168,15 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<configuration>
+					<mavenExecutorId>forked-path</mavenExecutorId>
+					<useReleaseProfile>false</useReleaseProfile>
+					<arguments>-Psonatype-oss-release</arguments>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>com.j256.testcheckpublisher</groupId>
