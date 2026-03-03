@@ -7,7 +7,7 @@ LIBRARY="test-check-publisher-maven-plugin"
 LOCAL_DIR="$HOME/svn/local/$LIBRARY"
 
 #############################################################
-# check initial stuffx
+# check initial stuff
 
 bad=0
 
@@ -65,23 +65,32 @@ if [ "$release" != "$ver" ]; then
     bad=1
 fi
 
-if [ -r "src/main/doc/$LIBRARY.texi" ]; then
-    ver=$(grep "^@set ${LIBRARY}_version" src/main/doc/$LIBRARY.texi | cut -f3 -d' ')
-    if [ "$release" != "$ver" ]; then
-	/bin/echo "$LIBRARY.texi version seems wrong:"
-	grep "^@set ${LIBRARY}_version" src/main/doc/$LIBRARY.texi
-	/bin/echo -n "Press control-c to quit otherwise return.  [ok] "
-	read cont
-    fi
-fi
-
 grep -q $release README.md
 if [ $? != 0 ]; then
     /bin/echo "Could not find $release in README.md"
     bad=1
 fi
 
+if [ -r "src/main/doc/$LIBRARY.texi" ]; then
+    ver=$(grep "^@set ${LIBRARY}_version" src/main/doc/$LIBRARY.texi | cut -f3 -d' ')
+    if [ "$release" != "$ver" ]; then
+		/bin/echo "$LIBRARY.texi version seems wrong:"
+		grep "^@set ${LIBRARY}_version" src/main/doc/$LIBRARY.texi
+		bad=1
+    fi
+fi
+
+if [ -r "src/main/javadoc/doc-files/$LIBRARY.html" ]; then
+    grep "Version $release" src/main/javadoc/doc-files/$LIBRARY.html > /dev/null
+    if [ $? -ne 0 ]; then
+	/bin/echo "javadoc doc-files $LIBRARY.html version seems wrong:"
+	grep "Version " src/main/javadoc/doc-files/$LIBRARY.html
+	bad=1
+    fi
+fi
+
 if [ $bad -ne 0 ]; then
+    echo "Please fix the previous error and re-run"
     exit 1
 fi
 

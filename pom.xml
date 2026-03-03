@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.j256.testcheckpublisher</groupId>
 	<artifactId>test-check-publisher-maven-plugin</artifactId>
@@ -15,13 +15,11 @@
 			<url>https://opensource.org/licenses/ISC</url>
 		</license>
 	</licenses>
-	<parent>
-		<groupId>org.sonatype.oss</groupId>
-		<artifactId>oss-parent</artifactId>
-		<version>5</version>
-	</parent>
 	<properties>
-		<disableDoclint />
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<maven.compiler.source>8</maven.compiler.source>
+		<maven.compiler.target>8</maven.compiler.target>
 		<!-- optional dependencies -->
 		<gson-version>2.2.2</gson-version>
 		<httpclient-version>4.5.13</httpclient-version>
@@ -52,32 +50,6 @@
 		<connection>scm:git:ssh://git@github.com/j256/test-check-publisher-maven-plugin.git</connection>
 		<developerConnection>scm:git:ssh://git@github.com/j256/test-check-publisher-maven-plugin.git</developerConnection>
 	</scm>
-	<profiles>
-		<profile>
-			<id>disable-java8-doclint</id>
-			<activation>
-				<jdk>[1.8,)</jdk>
-			</activation>
-			<properties>
-				<disableDoclint>-Xdoclint:none</disableDoclint>
-			</properties>
-		</profile>
-		<profile>
-			<id>st</id>
-			<distributionManagement>
-				<repository>
-					<id>sonatype-nexus-staging</id>
-					<name>Nexus Release Repository</name>
-					<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-				</repository>
-				<snapshotRepository>
-					<id>sonatype-nexus-snapshots</id>
-					<name>Sonatype Nexus Snapshots</name>
-					<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-				</snapshotRepository>
-			</distributionManagement>
-		</profile>
-	</profiles>
 	<build>
 		<finalName>test-check-publisher-maven-plugin</finalName>
 		<!-- Resources -->
@@ -118,28 +90,30 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.9.1</version>
+				<version>3.12.0</version>
 				<executions>
 					<execution>
 						<goals>
 							<goal>jar</goal>
 						</goals>
-						<configuration>
-							<showPackage>false</showPackage>
-							<additionalparam>-tag inheritDoc:X ${disableDoclint}</additionalparam>
-						</configuration>
 					</execution>
 				</executions>
 				<configuration>
-					<showPackage>false</showPackage>
+					<source>${maven.compiler.source}</source>
 					<bottom>
-						This content is licensed by Gray Watson under the
+						This documentation content is licensed by Gray Watson
+						under the
 						&lt;a
-						href="https://creativecommons.org/licenses/by-sa/3.0/" &gt;Creative Commons Attribution-Share Alike 3.0 License.
+						href="https://creativecommons.org/licenses/by-sa/3.0/"
+						&gt;Creative Commons Attribution-Share Alike 3.0
+						License.
 						&lt;/a&gt; </bottom>
-					<additionalparam>-tag inheritDoc:X ${disableDoclint}</additionalparam>
-					<excludePackageNames>
-					</excludePackageNames>
+					<doclint>none</doclint>
+					<docfilessubdirs>true</docfilessubdirs>
+					<links>
+						<link>
+							https://docs.oracle.com/en/java/javase/${maven.compiler.source}/docs/api/</link>
+					</links>
 				</configuration>
 			</plugin>
 			<plugin>

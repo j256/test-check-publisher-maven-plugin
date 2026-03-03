@@ -17,7 +17,7 @@ public class CommandLineGitContextFinder implements GitContextFinder {
 
 	// git@github.com:j256/test-check-publisher-maven-plugin.git
 	// ssh://git@github.com/j256/test-check-publisher-maven-plugin.git
-	private static final Pattern REMOTE_ORGIN_URL_PATTERN = Pattern.compile("(.*:|.*://[^/]+/)([^/]+)/(.+).git");
+	private static final Pattern REMOTE_ORGIN_URL_PATTERN = Pattern.compile("(.*:|.*://[^/]+/)([^/]+)/(.+?)(.git)?");
 	private static final Pattern LOG_PATTERN = Pattern.compile("commit ([^ ]+) ?.*");
 	private Queue<String> testFirstLines;
 
