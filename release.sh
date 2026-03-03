@@ -33,13 +33,17 @@ if [ $? -ne 0 ]; then
     bad=1
 fi
 
-#############################################################
-# check maven settings
-
-grep sonatype-nexus-snapshots $HOME/.m2/settings.xml > /dev/null 2>&1
+mvn -B -q javadoc:javadoc
 if [ $? -ne 0 ]; then
-    /bin/echo "Can't find sonatype info in the maven settings.xml file"
-    exit 1
+    /bin/echo "ERROR: javadoc errors exist"
+    bad=1
+fi
+
+cd $LOCAL_DIR
+mvn javadoc:javadoc | grep WARNING
+if [ $? -eq 0 ]; then
+    /bin/echo "ERROR: javadoc warnings exist"
+    bad=1
 fi
 
 #############################################################
@@ -121,10 +125,9 @@ git push --delete origin $tag 2> /dev/null
 read cont
 if [ "$cont" = "" -o "$cont" = "y" ]; then
     cd $LOCAL_DIR
-    mvn -P st release:clean || exit 1
-    mvn -P st release:prepare || ( /bin/echo "Maybe use mvn release:rollback to rollback"; exit 1 )
-    mvn -P st release:perform || ( /bin/echo "Maybe use mvn release:rollback to rollback"; exit 1 )
-
+    mvn release:clean || exit 1
+    mvn release:prepare || { /bin/echo "Maybe use mvn release:rollback to rollback"; exit 1; }
+    mvn release:perform || { /bin/echo "Maybe use mvn release:rollback to rollback"; exit 1; }
     /bin/echo ""
     /bin/echo ""
 fi
