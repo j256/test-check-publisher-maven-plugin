@@ -1,3 +1,6 @@
+1.6: 3/3/2026
+	* Added support for Github Actions. 
+
 1.5: 2/16/2021
 	* Moved the format up to the PublishedTestResults.
 

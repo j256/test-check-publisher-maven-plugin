@@ -1,17 +1,21 @@
 Test Check Publisher Maven Plugin
 =================================
 
+[![Maven Central](https://img.shields.io/maven-central/v/com.j256.simplejmx/simplejmx?style=flat-square)](https://mvnrepository.com/artifact/com.j256.testcheckpublisher/testcheckpublisher/latest)
+[![javadoc](https://javadoc.io/badge2/com.j256.testcheckpublisher/test-check-publisher-maven-plugin/javadoc.svg)](https://javadoc.io/doc/com.j256.testcheckpublisher/test-check-publisher-maven-plugin)
+[![CircleCI](https://circleci.com/gh/j256/test-check-publisher-maven-plugin.svg?style=svg)](https://circleci.com/gh/j256/test-check-publisher-maven-plugin) [![CodeCov](https://img.shields.io/codecov/c/github/j256/test-check-publisher-maven-plugin.svg)](https://codecov.io/github/j256/test-check-publisher-maven-plugin/)
+
 This maven plugin is designed to take tests results produced by continuous integration and publish
 them to github as a "check" annotation on a particular commit.  For the full instructions about how
 to get this working, see the
 [Test Check Publisher Github application](https://github.com/apps/test-check-publisher).
 
-* The source code be found on the [git repository](https://github.com/j256/test-check-publisher-maven-plugin). [![CircleCI](https://circleci.com/gh/j256/test-check-publisher-maven-plugin.svg?style=svg)](https://circleci.com/gh/j256/test-check-publisher-maven-plugin) [![CodeCov](https://img.shields.io/codecov/c/github/j256/test-check-publisher-maven-plugin.svg)](https://codecov.io/github/j256/test-check-publisher-maven-plugin/)
-* Maven packages are published via [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.j256.testcheckpublisher/test-check-publisher-maven-plugin/badge.svg?style=flat-square)](https://maven-badges.herokuapp.com/maven-central/com.j256.testcheckpublisher/test-check-publisher-maven-plugin/)
-* Documentation: [![javadoc](https://javadoc.io/badge2/com.j256.testcheckpublisher/test-check-publisher-maven-plugin/javadoc.svg)](https://javadoc.io/doc/com.j256.testcheckpublisher/test-check-publisher-maven-plugin)
+* The source code be found on the [git repository](https://github.com/j256/test-check-publisher-maven-plugin).
+* Maven packages are published via [Maven Central](https://mvnrepository.com/artifact/com.j256.testcheckpublisher/testcheckpublisher/latest)
+* Documentation: [javadoc](https://javadoc.io/doc/com.j256.testcheckpublisher/test-check-publisher-maven-plugin)
 
 You need to add the test-check-publisher integration to your repository and then add something like
-the following to your `pom.xml` file in the build, plugins section:
+the following to your `pom.xml` file in the `build`, `plugins` section:
 
 	<plugin>
 		<groupId>com.j256.testcheckpublisher</groupId>

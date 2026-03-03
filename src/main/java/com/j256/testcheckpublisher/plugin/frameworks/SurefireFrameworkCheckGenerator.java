@@ -134,7 +134,11 @@ public class SurefireFrameworkCheckGenerator implements FrameworkCheckGenerator 
 
 		MutableInteger sourceFileMissingCounter = new MutableInteger();
 		MutableInteger tooLongCounter = new MutableInteger();
-		for (TestCase test : suite.getTestcases()) {
+		TestCase[] testCases = suite.getTestcases();
+		if (testCases == null || testCases.length == 0) {
+			log.error("no test cases found");
+		}
+		for (TestCase test : testCases) {
 
 			Problem failure = test.getFailure();
 			Problem error = test.getError();
