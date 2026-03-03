@@ -102,6 +102,7 @@ The maven plugin supports a couple of configuration parameters:
 | verbose | false | Verbose log output if mvn -X is used. |
 | format | none | Comma separated tokens that affect the resulting github checks format.  See below. |
 | ignorePass | false | Do not post any information about tests that pass. |
+| failOnError | true | Throw an exception and stop on error. Set to false to continue the build on error. |
 
 # Format Tokens
 

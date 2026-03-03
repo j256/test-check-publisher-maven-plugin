@@ -69,6 +69,8 @@ public class TestCheckPubMojo extends AbstractMojo {
 	/** Ignore posting any information about tests that pass. */
 	@Parameter
 	private boolean ignorePass;
+	@Parameter(defaultValue = "true")
+	private boolean failOnError;
 
 	private ResultPoster resultPoster;
 	private boolean throwOnError;
@@ -81,7 +83,14 @@ public class TestCheckPubMojo extends AbstractMojo {
 		try {
 			publish(log);
 		} catch (IOException ioe) {
-			throw new MojoExecutionException("IOException trying to publish our test checks to github", ioe);
+			MojoExecutionException mee =
+					new MojoExecutionException("IOException trying to publish our test checks to github", ioe);
+			if (failOnError) {
+				throw mee;
+			} else {
+				mee.printStackTrace();
+				// ignore the exception
+			}
 		}
 	}
 
@@ -115,6 +124,10 @@ public class TestCheckPubMojo extends AbstractMojo {
 
 	public void setSourceDir(File sourceDir) {
 		this.sourceDir = sourceDir;
+	}
+
+	public void setFailOnError(boolean failOnError) {
+		this.failOnError = failOnError;
 	}
 
 	/**
